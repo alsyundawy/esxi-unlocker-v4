@@ -1,99 +1,220 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # coding=utf-8
 
 # SPDX-License-Identifier: MIT
 
+"""
+patchvmkctl - Patch or check the libvmkctl.so shared library for ESXi.
+
+The 'applesmc' string in libvmkctl.so gates smcPresent reporting to vCenter.
+Replacing it with 'vmkernel' (same 8-byte length, no null-terminator issue)
+allows vCenter to start macOS guests on a patched ESXi host.
+
+Usage:
+    patchvmkctl patch|check <libvmkctl-filename>
+
+Compatibility:
+    ESXi 6.7, 7.0, 7.0 U1/U2/U3, 8.0, 8.0 U1/U2/U3 (ESXi 8 U3 latest)
+
+Copyright (c) 2007-2026 David Parsons
+Copyright (c) 2024-2026 Harry DS Alsyundawy - Alsyundawy IT Solution
+License: MIT
+
+Changelog:
+    2026-06-10 4.0.7a alsyundawy  Preserve original file mode (chmod) after
+                                  writing patched content back with open('wb')
+                                  — open('wb') truncates then rewrites, which
+                                  on some ESXi filesystem drivers may not
+                                  honour the inode's existing permission bits
+                                  correctly. Now explicitly calls os.chmod().
+                                  Move backup() call to after patchability
+                                  check so .bak is not created for files that
+                                  cannot be patched (already patched or no
+                                  applesmc string found).
+    2026-06-10 4.0.7  alsyundawy  Reference: DrDonk/unlocker 4.2.8. Align with
+                                  upstream PatchVMKCTL() in vmkctl.go: print
+                                  before/after string when patching. Add
+                                  SHA-256 before/after. Add backup. Add
+                                  _check_file_patchable() guard. Update banner.
+    2026-06-10 4.0.6  alsyundawy  Change shebang to python3. Replace bare
+                                  open() with context managers. Fix shebang.
+                                  Add module docstring and copyright.
+    2023-01-09 4.0.5  drdonk     Original release.
+"""
+
+import hashlib
 import os
+import shutil
 import sys
 
 if sys.version_info < (3, 6):
-    sys.stderr.write("You need Python 3.6 or later\n")
+    sys.stderr.write('You need Python 3.6 or later\n')
     sys.exit(1)
 
 
-def checkvmkctl(name):
-    # Patch file
-    f = open(name, "rb")
+# ---------------------------------------------------------------------------
+# Patch constants (matching upstream vmkctl.go)
+# ---------------------------------------------------------------------------
+APPLESMC = b'applesmc'   # 8 bytes — string to replace
+VMKERNEL = b'vmkernel'   # 8 bytes — replacement string
 
-    # Read file into string variable
-    vmkctl = f.read()
-    applesmc = vmkctl.find(b'applesmc')
 
-    # Tidy up
-    f.close()
+# ---------------------------------------------------------------------------
+# Helpers
+# ---------------------------------------------------------------------------
 
-    if applesmc == -1:
-        flag = True
+def _sha256(data: bytes) -> str:
+    """Return hex SHA-256 digest of *data*."""
+    return hashlib.sha256(data).hexdigest()
+
+
+def _check_file_patchable(name: str) -> bool:
+    """Return True if *name* is a non-empty regular file."""
+    if not os.path.isfile(name):
+        print(f'SKIP: {name} — not a regular file. Skipping.')
+        return False
+    if os.path.getsize(name) == 0:
+        print(f'SKIP: {name} — file is 0 bytes. Skipping.')
+        return False
+    return True
+
+
+def _backup_file(name: str) -> str:
+    """Create *name*.bak backup if it does not already exist."""
+    backup = name + '.bak'
+    if not os.path.exists(backup):
+        shutil.copy2(name, backup)
+        print(f'Backup: {name} -> {backup}')
     else:
-        flag = False
-    print(f'Patch Status: {flag}')
-    return flag
+        print(f'Backup already exists: {backup} (skipped overwrite)')
+    return backup
 
 
-def patchvmkctl(name):
-    if checkvmkctl(name):
-        print(f'File is already patched')
+# ---------------------------------------------------------------------------
+# Main functions
+# ---------------------------------------------------------------------------
+
+def checkvmkctl(name: str) -> bool:
+    """
+    Return True if libvmkctl.so is already patched (applesmc string absent).
+
+    Mirrors upstream IsVMKCTLPatched() semantics.
+    """
+    if not _check_file_patchable(name):
+        return False
+
+    with open(name, 'rb') as fh:
+        vmkctl = fh.read()
+
+    sha = _sha256(vmkctl)
+    print(f'SHA256: {sha}')
+
+    patched = APPLESMC not in vmkctl
+    print(f'Patch Status: {patched}')
+    return patched
+
+
+def patchvmkctl(name: str) -> None:
+    """
+    Patch libvmkctl.so by replacing 'applesmc' with 'vmkernel'.
+
+    Mirrors upstream PatchVMKCTL() in vmkctl.go:
+        offset := bytes.Index(contents, APPLESMC)
+        before := string(contents[offset : offset+8])
+        copy(contents[offset:offset+8], VMKERNEL)
+        after  := string(contents[offset : offset+8])
+        fmt.Printf("Patching %s -> %s\n", before, after)
+    """
+    if not _check_file_patchable(name):
         return
 
-    # Patch file
-    f = open(name, "r+b")
+    # Capture original permissions before any write operation
+    orig_mode = os.stat(name).st_mode
 
-    # Read file into string variable
-    vmkctl = f.read()
-    applesmc = vmkctl.find(b'applesmc')
-    f.seek(applesmc)
-    f.write(b'vmkernel')
+    with open(name, 'rb') as fh:
+        vmkctl = fh.read()
 
-    # Tidy up
-    f.flush()
-    f.close()
-    print("smcPresent Patched")
-    return
+    sha_before = _sha256(vmkctl)
+    print(f'SHA256 (before): {sha_before}')
+
+    offset = vmkctl.find(APPLESMC)
+    if offset == -1:
+        print('applesmc string not found — file may already be patched '
+              'or is not a supported libvmkctl.so.')
+        print(f'Patch Status: {APPLESMC not in vmkctl}')
+        return
+
+    before = vmkctl[offset:offset + 8].decode('ascii', errors='replace')
+    print(f'Patching {before} -> {VMKERNEL.decode()}')
+
+    # Backup before writing (only if file is actually going to be patched)
+    _backup_file(name)
+
+    # Patch in-memory using bytearray (safe, no seek needed)
+    vmkctl_patched = bytearray(vmkctl)
+    vmkctl_patched[offset:offset + 8] = VMKERNEL
+
+    with open(name, 'wb') as fh:
+        fh.write(vmkctl_patched)
+
+    # Restore original file permissions (open 'wb' may reset on some FS)
+    os.chmod(name, orig_mode)
+
+    sha_after = _sha256(bytes(vmkctl_patched))
+    print(f'SHA256 (after) : {sha_after}')
+
+    # Write checksum file
+    sha_file = name + '.sha256'
+    with open(sha_file, 'w') as sf:
+        sf.write(f'{sha_before}\n{sha_after}\n')
+    print(f'Checksums written: {sha_file}')
+
+    print('smcPresent patched successfully.')
 
 
-def print_usage():
-    print("Usage:")
-    print(f"{sys.argv[0]} patch|check <vmkctl filename>")
-    print("\nFirst option is command to perform:")
-    print(f"  patch - patch the vSMC table in vmx executable")
-    print(f"  check - check the vSMC table in vmx executable")
-    print(f"\nSecond option is the filename of executable:")
-    print(f"  <vmkctl filename> - the libvmkctl.so executable to patch")
-
+def print_usage() -> None:
+    print('Usage:')
+    print(f'  {sys.argv[0]} patch|check <libvmkctl-filename>')
+    print()
+    print('Commands:')
+    print('  patch - Patch smcPresent string in libvmkctl.so')
+    print('  check - Check patch status of libvmkctl.so')
+    print()
+    print('Argument:')
+    print('  <libvmkctl-filename>  Path to libvmkctl.so')
     sys.exit(1)
 
 
-def main():
-    # Function pointer
-    f = None
-
-    # Parse args and call command
+def main() -> None:
     if len(sys.argv) >= 3:
-        if sys.argv[1] == "check":
-            f = checkvmkctl
-        elif sys.argv[1] == "patch":
-            f = patchvmkctl
-        elif sys.argv[1] == "-h":
-            print_usage()
-        else:
-            print(f"Error: Incorrect command {sys.argv[1]} passed.")
-            print_usage()
+        cmd      = sys.argv[1]
         filename = sys.argv[2]
-        if os.path.isfile(filename):
-            print(f"Filename: {filename}")
-            f(filename)
+
+        if cmd == 'check':
+            fn = checkvmkctl
+        elif cmd == 'patch':
+            fn = patchvmkctl
+        elif cmd in ('-h', '--help'):
+            print_usage()
+            return
         else:
-            print(f"Error: Cannot find file {filename}")
+            print(f'Error: Unknown command "{cmd}".')
+            print_usage()
+            return
+
+        if not os.path.exists(filename):
+            print(f'Error: File not found: {filename}')
             sys.exit(1)
-        return
+
+        print(f'Filename: {filename}')
+        fn(filename)
     else:
         print_usage()
-        return
 
 
-if __name__ == "__main__":
-    print("PatchVMKCTL 4.0.5")
-    print("=================")
+if __name__ == '__main__':
+    print('PatchVMKCTL 4.0.7 (ESXi 6.7 / 7.x / 8 U3)')
+    print('============================================')
     print()
     main()
     sys.exit(0)

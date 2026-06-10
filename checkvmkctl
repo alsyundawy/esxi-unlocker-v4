@@ -1,3 +1,29 @@
 #!/bin/sh
 # SPDX-License-Identifier: MIT
-python3 patchvmkctl check $1
+# checkvmkctl - Check the patch status of libvmkctl.so
+# Usage: checkvmkctl <libvmkctl-filename>
+# Copyright (c) 2007-2026 David Parsons
+# Copyright (c) 2024-2026 Harry DS Alsyundawy - Alsyundawy IT Solution
+# License: MIT
+# Changelog:
+#   2026-06-10 4.0.7a alsyundawy  Add SCRIPT_DIR resolution so script works
+#                                 regardless of caller's CWD. Validate $1.
+#   2026-06-10 4.0.7  alsyundawy  Update version reference.
+#   2026-06-10 4.0.6  alsyundawy  Quote $1 to prevent word splitting.
+
+SCRIPT_DIR=$(dirname "$(readlink -f "$0")")
+
+if [ -z "$1" ]; then
+    printf 'Usage: %s <libvmkctl-filename>\n' "$0"
+    exit 1
+fi
+
+# Detect python3 for this ESXi version
+for _py in /usr/bin/python3 \
+           /usr/lib/vmware/venv-vsphere/bin/python3 \
+           /usr/lib/vmware/venv-65/bin/python3; do
+    [ -x "$_py" ] && PYTHON3="$_py" && break
+done
+: "${PYTHON3:=/usr/bin/python3}"
+
+"$PYTHON3" "$SCRIPT_DIR/patchvmkctl" check "$1"
