@@ -81,4 +81,4 @@ Terima kasih kepada lucaskamp karena menguji Unlocker ESXi versi 4 yang baru.
 
 ## 5. Log Perubahan (Changelog)
 
-Silakan lihat file [CHANGELOG-id.md](CHANGELOG-id.md) untuk melihat daftar lengkap perubahan dari setiap versi.
+Silakan lihat file [CHANGELOG-ID.md](CHANGELOG-ID.md) untuk melihat daftar lengkap perubahan dari setiap versi.
