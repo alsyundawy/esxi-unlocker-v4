@@ -78,3 +78,7 @@ debugging expertise. Sam also wrote the code for patching ESXi ELF files and
 modified the Unlocker code to run on Python 3 in the ESXi 6.5 environment.
 
 Thanks to lucaskamp for testing the new version 4 of ESXi Unlocker.
+
+## 5. Changelog
+
+Please refer to the [CHANGELOG.md](CHANGELOG.md) file for a complete list of changes and version history.
