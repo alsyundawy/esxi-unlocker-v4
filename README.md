@@ -1,84 +1,105 @@
 # macOS Unlocker V4 for VMware ESXi
 
-## IMPORTANT: Security Update
+## IMPORTANT: Security and licensing notice
 
-VMware have [announced](https://www.vmware.com/security/advisories/VMSA-2023-0024.html) and fixed a vulnerability in
-VMware Tools across macOS, Linux and Windows guests. Please ensure that you update the guest tools which can
-be found at <https://vmware.com/go/tools>.
+Use this project only on systems you own or administer and only where your VMware and Apple/macOS licensing permits it. This project patches ESXi binaries and can make a host unsupported by VMware/Broadcom support. Do not use it on production hosts.
 
-## Unlocker 2007-2023
+VMware/Broadcom and the open-vm-tools project continue to publish VMware Tools updates. As of the 2026 update pass for this fork, VMware Tools/open-vm-tools 13.1.0 build 25218885 is the current referenced tools generation, and guest tools should be kept updated for security and compatibility.
 
-This project is now archived.
+## Unlocker 2007-2026
 
-The unlocker should continue to run as there have been few changes to the VMware code in many years.
-I have stopped development as I no longer use VMware but would be happy to refer to a fork if someone
-sends me an email with the relevant details.
+The original DrDonk Unlocker project is now complete and archived for VMware Workstation/Player. This repository is an ESXi-focused fork/port that keeps the ESXi shell/Python workflow maintained separately.
 
-There is also [Auto Unlocker](https://github.com/paolo-projects/auto-unlocker) which is still active.
+Important distinction:
+
+- Upstream DrDonk/unlocker 4.x is Go-based and targets VMware Workstation/Player.
+- This fork targets VMware ESXi and uses ESXi-specific bootbank/VMTAR handling.
+- Upstream logic is used only as a reference where the patching concepts match.
 
 ## 1. Introduction
 
-Unlocker 4 is designed for VMware ESXi 7.
+Unlocker 4 for ESXi is intended for compatible VMware ESXi 6.7, 7.x, and 8.x hosts, including ESXi 8.0 U3-era builds.
 
-The Unlocker enables certain flags and data tables that are required to see the macOS type when setting
-the guest OS type, and modify the implementation of the virtual SMC controller device. These capabilities are normally
-exposed in Fusion and ESXi when running on Apple hardware.
+The Unlocker enables certain flags and data tables that are required to see the macOS guest OS type and modifies the virtual SMC controller implementation. These capabilities are normally exposed when VMware runs on supported Apple hardware.
 
-The patch code carries out the following modifications dependent on the product being patched:
+The patch code carries out the following ESXi-specific modifications:
 
-- Patch vmx and derivatives to allow macOS to boot
-- Patch libvmkctl.so to allow vCenter to boot macOS guests
+- Patches `vmx` and `vmx-debug` to allow macOS guests to boot.
+- Patches `vmx-stats` only when it exists and is non-empty; on some ESXi 8.x builds it is absent or a zero-byte stub.
+- Patches `libvmkctl.so` only when present, allowing vCenter/hostd-side `smcPresent` behaviour required by some macOS guest workflows.
+- Builds and registers `apple.v00` as an ESXi bootbank module.
 
-It is important to understand that the Unlocker cannot add any new capabilities to VMware ESXi
-but enables support for macOS that is disabled in the VMware products when run on non-Apple hardware.
+The Unlocker cannot add capabilities that are not already present in compiled VMware code. It cannot:
 
-The Unlocker cannot:
+- Add support for macOS versions not supported by the underlying VMware build.
+- Add paravirtualized Apple GPU support.
+- Add CPU features missing from the physical host.
+- Provide formal AMD CPU support.
 
-- add support for new versions of macOS
-- add paravirtualized Apple GPU support
-- add AMD CPU support
+## 2. Installing the patcher
 
-or any other features that are not already in the VMware compiled code.
+### Important notes
 
-## 2. Installing the Patcher
+Run the ESXi unlocker again after every ESXi upgrade or patch because ESXi binary files and bootbank modules can change.
 
-### Important Notes
+Before running `unlock`:
 
-The ESXi unlocker will need to be run each time the ESXi Server is upgraded.
-It is also best to switch ESXi to Maintenance mode and ensure no VMs are running.
+- Put the ESXi host into Maintenance Mode where possible.
+- Shut down or migrate all running VMs.
+- Ensure at least 400 MB free space in the folder/datastore where the unlocker is extracted.
+- Keep a rollback path: run `relock`, reboot, and re-run `unlock` after host updates if `check` reports a mismatch.
 
-The code is written in Python and has no pre-requisites and should run directly from the release zip download.
+Version 4.0.7b now refuses to patch if running VMs are detected through `esxcli vm process list`. It also warns if the host does not appear to be in Maintenance Mode.
 
 ### Steps
 
-- Download a binary release from <https://github.com/alsyundawy/esxi-unlocker-v4/releases>
-- Unload the archive to a folder on the ESXi server datastore and extract the files
-- Navigate to the folder with the extracted files
+1. Download the release archive from your ESXi Unlocker fork release page.
+2. Extract the archive to a datastore folder on the ESXi host.
+3. Open an ESXi shell or SSH session as root.
+4. Navigate to the extracted folder.
+5. Run one of the commands below.
 
-You will then need to run one of the following commands to patch or unpatch the ESXi software.
+```sh
+./unlock     # apply ESXi unlock patches
+./relock     # remove ESXi unlock bootbank module
+./check      # verify current patch status
+```
 
-- `unlock` - apply patches to VMware ESXi
-- `relock` - remove patches from VMware ESXi
-- `check`  - check the patch status of your VMware installation
+For verbose shell tracing:
 
-## 3. Copyright
+```sh
+./unlock -v
+./relock -v
+```
 
-Copyright (c) 2007-2026 David Parsons
+## 3. Files
+
+| File | Purpose |
+|---|---|
+| `unlock` | Stages ESXi binaries, applies patches, builds `apple.v00`, and registers the bootbank module. |
+| `relock` | Removes `apple.v00` from ESXi bootbank configuration. |
+| `check` | Checks ESXi version match, `apple.v00` load status, vmx patch state, and optional `libvmkctl.so` status. |
+| `patchsmc` | Python patch/check/dump tool for ESXi `vmx` binaries. |
+| `patchvmkctl` | Python patch/check tool for optional `libvmkctl.so`. |
+| `checksmc` | Wrapper around `patchsmc check`. |
+| `checkvmkctl` | Wrapper around `patchvmkctl check`. |
+| `dumpsmc` | Wrapper around `patchsmc dump`. |
+
+## 4. Copyright
+
+Copyright (c) 2007-2026 David Parsons  
 Copyright (c) 2024-2026 Harry DS Alsyundawy - Alsyundawy IT Solution
 
 Credit must be given to the original authors when redistributing or modifying this project.
 
-## 4. Thanks
+## 5. Thanks
 
-Thanks to Zenith432 for originally building the C++ Unlocker and Mac Son of Knife
-(MSoK) for all the testing and support.
+Thanks to Zenith432 for originally building the C++ Unlocker and Mac Son of Knife (MSoK) for all testing and support.
 
-Thanks also to Sam B for finding the solution for ESXi 6 and helping me with
-debugging expertise. Sam also wrote the code for patching ESXi ELF files and
-modified the Unlocker code to run on Python 3 in the ESXi 6.5 environment.
+Thanks also to Sam B for finding the solution for ESXi 6 and helping with debugging expertise. Sam also wrote code for patching ESXi ELF files and modified Unlocker code to run on Python 3 in the ESXi 6.5 environment.
 
-Thanks to lucaskamp for testing the new version 4 of ESXi Unlocker.
+Thanks to lucaskamp and other testers who helped validate Unlocker version 4 behaviour.
 
-## 5. Changelog
+## 6. Changelog
 
-Please refer to the [CHANGELOG.md](CHANGELOG.md) file for a complete list of changes and version history.
+See [CHANGELOG.md](CHANGELOG.md) for the complete version history.

@@ -6,24 +6,54 @@
 # Copyright (c) 2024-2026 Harry DS Alsyundawy - Alsyundawy IT Solution
 # License: MIT
 # Changelog:
+#   2026-06-13 4.0.7b alsyundawy  Add PATH hardening, robust SCRIPT_DIR
+#                                 fallback when readlink -f is unavailable,
+#                                 executable python3 validation, and safer
+#                                 argument handling with ${1:-}.
 #   2026-06-10 4.0.7a alsyundawy  Add SCRIPT_DIR resolution so script works
 #                                 regardless of caller's CWD. Validate $1.
 #   2026-06-10 4.0.7  alsyundawy  Update version reference.
 #   2026-06-10 4.0.6  alsyundawy  Quote $1 to prevent word splitting.
 
-SCRIPT_DIR=$(dirname "$(readlink -f "$0")")
+export PATH=/bin:/sbin:/usr/bin:/usr/sbin
 
-if [ -z "$1" ]; then
-    printf 'Usage: %s <vmx-filename>\n' "$0"
+resolve_script() {
+    if command -v readlink >/dev/null 2>&1; then
+        _resolved=$(readlink -f "$0" 2>/dev/null || true)
+        if [ -n "$_resolved" ]; then
+            printf '%s\n' "$_resolved"
+            return 0
+        fi
+    fi
+
+    case "$0" in
+        /*) printf '%s\n' "$0" ;;
+        *)  printf '%s/%s\n' "$(pwd -P)" "$0" ;;
+    esac
+}
+
+detect_python3() {
+    for _py in /usr/bin/python3 \
+               /usr/lib/vmware/venv-vsphere/bin/python3 \
+               /usr/lib/vmware/venv-65/bin/python3; do
+        if [ -x "$_py" ]; then
+            printf '%s\n' "$_py"
+            return 0
+        fi
+    done
+    return 1
+}
+
+if [ -z "${1:-}" ]; then
+    printf 'Usage: %s <vmx-filename>\n' "$0" >&2
     exit 1
 fi
 
-# Detect python3 for this ESXi version
-for _py in /usr/bin/python3 \
-           /usr/lib/vmware/venv-vsphere/bin/python3 \
-           /usr/lib/vmware/venv-65/bin/python3; do
-    [ -x "$_py" ] && PYTHON3="$_py" && break
-done
-: "${PYTHON3:=/usr/bin/python3}"
+SCRIPT=$(resolve_script)
+SCRIPT_DIR=$(dirname "$SCRIPT")
+PYTHON3=$(detect_python3) || {
+    printf 'ERROR: python3 not found on this ESXi host\n' >&2
+    exit 1
+}
 
 "$PYTHON3" "$SCRIPT_DIR/patchsmc" check "$1"

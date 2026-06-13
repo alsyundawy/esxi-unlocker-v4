@@ -2,6 +2,36 @@
 
 All dates are UK DD/MM/YY format.
 
+## 13/06/26 4.0.7b
+
+_alsyundawy (Harry DS Alsyundawy - Alsyundawy IT Solution):_
+
+> Final hardening pass for ESXi 6.7 / 7.x / 8 U3 as of 13/06/26. The ESXi
+> wrapper remains fork-specific; upstream DrDonk/unlocker 4.x is used only as
+> a patch-logic reference for matching concepts, not as a drop-in ESXi release.
+
+- `unlock`: Define ANSI color variables before first possible error path; previous `python3` detection could print uncolored/empty error formatting because `${RED}` and `${RST}` were declared later.
+- `unlock`: Add preflight checks for required ESXi commands (`vmware`, `esxcli`, `vmtar`, `pigz`, `BootModuleConfig.sh`, etc.) so missing host tools fail early instead of producing a broken `apple.v00`.
+- `unlock`: Make `vmware -v` failure fatal; writing `Unknown` to `unlock.conf` would make later `check` unreliable after host updates.
+- `unlock`: Validate `df -m .` output is numeric before comparing free space, preventing POSIX shell integer-expression errors on unexpected `df` output.
+- `unlock`: Refuse to patch while running VMs are detected via `esxcli vm process list`; warn when the host does not appear to be in Maintenance Mode.
+- `unlock`: Replace non-portable `find -delete` staging cleanup with POSIX-compatible `find ... -exec rm -f {} \;`, improving BusyBox/ESXi compatibility.
+- `unlock`: Treat failed `patchsmc` on required `vmx` and `vmx-debug` as fatal; optional `vmx-stats` and `libvmkctl.so` remain non-fatal where not applicable.
+- `unlock`: Detect and remove an existing `/bootbank/apple.v00` before adding the new boot module, reducing duplicate/stale module risk.
+- `check`: Add final non-zero exit status when required checks fail, while keeping optional `vmx-stats`/`libvmkctl.so` absence as warnings.
+- `check`: Add robust script-directory fallback if `readlink -f` is unavailable and verify the detected `python3` path is executable.
+- `checksmc`, `checkvmkctl`, `dumpsmc`: Add PATH hardening, robust `SCRIPT_DIR` fallback, executable `python3` validation, and safer `${1:-}` argument checks.
+- `patchsmc`: Return meaningful success/failure exit codes to the caller; failed required binary patching now stops `unlock`.
+- `patchsmc`: Move `.bak` creation until after already-patched and binary-layout checks, avoiding misleading backups for already-patched or incompatible files.
+- `patchsmc`: Detect partial OSK patch state (`OSK0` present but `OSK1` missing, or vice versa) and fail instead of attempting a blind re-patch.
+- `patchsmc`: Locate table-1 `#KEY` relative to `SMC_HEADER_V1` instead of using global `rfind()`, preventing accidental selection of an unrelated late marker.
+- `patchsmc`, `patchvmkctl`: Restore file permissions with `stat.S_IMODE(os.stat(...).st_mode)` instead of passing full `st_mode` bits to `os.chmod()`.
+- `patchvmkctl`: Return meaningful exit status and keep absent `applesmc` as non-fatal for already-patched or ESXi builds where the optional vmkctl patch does not apply.
+- `relock`: Add `BootModuleConfig.sh` validation and stricter failure reporting when removal fails.
+- `README.md`, `README-ID.md`: Update project status, compatibility wording, 2026 VMware Tools guidance, and ESXi-specific fork clarification.
+- `TROUBLESHOOTING.md`, `TROUBLESHOOTING-ID.md`: Update examples to 4.0.7b and document the new non-zero check behaviour, running-VM guard, and optional component handling.
+- `LICENSE`: Add explicit 2024-2026 modification copyright line while preserving the MIT license text.
+
 ## 10/06/26 4.0.7a
 
 _alsyundawy (Harry DS Alsyundawy - Alsyundawy IT Solution):_

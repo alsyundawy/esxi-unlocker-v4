@@ -22,6 +22,15 @@ Copyright (c) 2024-2026 Harry DS Alsyundawy - Alsyundawy IT Solution
 License: MIT
 
 Changelog:
+    2026-06-13 4.0.7b alsyundawy  Return non-zero status for failed patch/check
+                                  paths so unlock/check automation can stop
+                                  safely. Move .bak creation until after
+                                  already-patched and binary-layout checks so
+                                  unsupported or already-patched files do not
+                                  generate misleading backups. Use S_IMODE()
+                                  when restoring permissions. Locate table 1
+                                  #KEY relative to SMC_HEADER_V1 instead of
+                                  using global rfind().
     2026-06-10 4.0.7a alsyundawy  Fix unused loop variable 'i' in dumpkeys()
                                   (use '_' per Python convention). Explicitly
                                   preserve and restore original file permissions
@@ -71,6 +80,7 @@ The internal VMware routines point to 4 variants:
 import hashlib
 import os
 import shutil
+import stat
 import struct
 import sys
 
@@ -296,19 +306,16 @@ def patchosk(vmx, offset: int, ptr: int, data: bytes) -> int:
 # Main public functions
 # ---------------------------------------------------------------------------
 
-def patchsmc(name: str) -> None:
+def patchsmc(name: str) -> bool:
     """Patch the vSMC OSK0/OSK1 keys and ELF RELA records in *name*."""
 
     # ESXi 8.x guard: skip 0-byte stubs and non-regular files
     if not _check_file_patchable(name):
-        return
+        return False
 
     # Capture original permissions before any write operation
     # Mirrors upstream Go CopyFile os.Chmod() in vmw.go
-    orig_mode = os.stat(name).st_mode
-
-    # Backup before patching (upstream Go feature since 4.1.0)
-    _backup_file(name)
+    orig_mode = stat.S_IMODE(os.stat(name).st_mode)
 
     with open(name, 'rb+') as vmx:
         vmx_bytes = vmx.read()
@@ -321,9 +328,14 @@ def patchsmc(name: str) -> None:
         # Fast already-patched check using raw OSK data search
         # Mirrors upstream Go checkPatch() which searches for osk0Data/osk1Data
         # ------------------------------------------------------------------
-        if OSK0 in vmx_bytes and OSK1 in vmx_bytes:
+        osk0_present = OSK0 in vmx_bytes
+        osk1_present = OSK1 in vmx_bytes
+        if osk0_present and osk1_present:
             print(f'File {name} is already patched')
-            return
+            return True
+        if osk0_present != osk1_present:
+            print(f'ERROR: File {name} appears partially patched (OSK0/OSK1 mismatch).')
+            return False
 
         # ------------------------------------------------------------------
         # Locate vSMC structures (guard against missing patterns on ESXi 8.x)
@@ -335,10 +347,9 @@ def patchsmc(name: str) -> None:
                 vmx_bytes, SMC_HEADER_V1, label='SMC_HEADER_V1') - 8
 
             smc0_key = _find_required(
-                vmx_bytes, KEY_KEY, label='#KEY (table 0)')
-            smc1_key_raw = vmx_bytes.rfind(KEY_KEY)
-            # Single-table binary: rfind returns same offset as find
-            smc1_key = smc1_key_raw if smc1_key_raw != smc0_key else smc0_key
+                vmx_bytes, KEY_KEY, smc0_header, label='#KEY (table 0)')
+            smc1_key = _find_required(
+                vmx_bytes, KEY_KEY, smc1_header, label='#KEY (table 1)')
 
             smc0_lks  = _find_required(
                 vmx_bytes, LKS_KEY, smc0_key, label='+LKS (table 0)')
@@ -357,7 +368,10 @@ def patchsmc(name: str) -> None:
         except RuntimeError as exc:
             print(f'ERROR: {exc}')
             print(f'File {name} cannot be patched — skipping.')
-            return
+            return False
+
+        # Backup only after confirming the file is patchable and not already patched.
+        _backup_file(name)
 
         # ------------------------------------------------------------------
         # Patch first vSMC table (smc.version = "0")
@@ -426,6 +440,7 @@ def patchsmc(name: str) -> None:
         print(f'Checksums written: {sha_file}')
 
         del vmx_bytes
+        return True
 
 
 def dumpkeys(vmx, offset: int, count: int) -> None:
@@ -440,11 +455,11 @@ def dumpkeys(vmx, offset: int, count: int) -> None:
         offset += ROW_LENGTH
 
 
-def dumpsmc(name: str) -> None:
+def dumpsmc(name: str) -> bool:
     """Dump both vSMC key tables from *name* to stdout."""
 
     if not _check_file_patchable(name):
-        return
+        return False
 
     with open(name, 'rb') as vmx:
         vmx_bytes = vmx.read()
@@ -461,7 +476,7 @@ def dumpsmc(name: str) -> None:
         except RuntimeError as exc:
             print(f'ERROR: {exc}')
             print(f'File {name} cannot be dumped — skipping.')
-            return
+            return False
 
         del vmx_bytes
 
@@ -474,14 +489,15 @@ def dumpsmc(name: str) -> None:
         hdr = gethdr(vmx, smc1_header)
         printhdr(smc1_header, hdr)
         dumpkeys(vmx, smc1_key, hdr[1])
+        return True
 
 
-def checksmc(name: str) -> None:
+def checksmc(name: str) -> bool:
     """Print the patch status of *name*."""
 
     if not _check_file_patchable(name):
         print('Patch Status: Unknown (file not patchable)')
-        return
+        return False
 
     with open(name, 'rb') as vmx:
         vmx_bytes = vmx.read()
@@ -500,9 +516,10 @@ def checksmc(name: str) -> None:
         else:
             # One present, one missing — partial/corrupt state
             print('Patch Status: Unknown (partial patch detected)')
-            return
+            return False
 
         print(f'Patch Status: {flag}')
+        return flag
 
 
 def print_usage() -> None:
@@ -516,41 +533,46 @@ def print_usage() -> None:
     print()
     print('Argument:')
     print('  <vmx-filename>  ESXi vmx binary: vmx / vmx-debug / vmx-stats')
-    sys.exit(1)
 
 
-def main() -> None:
-    if len(sys.argv) >= 3:
-        cmd      = sys.argv[1]
-        filename = sys.argv[2]
-
-        if cmd == 'patch':
-            fn = patchsmc
-        elif cmd == 'check':
-            fn = checksmc
-        elif cmd == 'dump':
-            fn = dumpsmc
-        elif cmd in ('-h', '--help'):
-            print_usage()
-            return
-        else:
-            print(f'Error: Unknown command "{cmd}".')
-            print_usage()
-            return
-
-        if not os.path.exists(filename):
-            print(f'Error: File not found: {filename}')
-            sys.exit(1)
-
-        print(f'Filename: {filename}')
-        fn(filename)
-    else:
+def main() -> int:
+    if len(sys.argv) == 2 and sys.argv[1] in ('-h', '--help'):
         print_usage()
+        return 0
+
+    if len(sys.argv) != 3:
+        print_usage()
+        return 1
+
+    cmd = sys.argv[1]
+    filename = sys.argv[2]
+
+    if cmd == 'patch':
+        fn = patchsmc
+    elif cmd == 'check':
+        fn = checksmc
+    elif cmd == 'dump':
+        fn = dumpsmc
+    else:
+        print(f'Error: Unknown command "{cmd}".')
+        print_usage()
+        return 1
+
+    if not os.path.exists(filename):
+        print(f'Error: File not found: {filename}')
+        return 1
+
+    print(f'Filename: {filename}')
+    try:
+        ok = fn(filename)
+    except OSError as exc:
+        print(f'ERROR: OS error while processing {filename}: {exc}')
+        return 1
+    return 0 if ok else 1
 
 
 if __name__ == '__main__':
-    print('PatchSMC 4.0.7 (ESXi 6.7 / 7.x / 8 U3)')
+    print('PatchSMC 4.0.7b (ESXi 6.7 / 7.x / 8 U3)')
     print('=========================================')
     print()
-    main()
-    sys.exit(0)
+    sys.exit(main())

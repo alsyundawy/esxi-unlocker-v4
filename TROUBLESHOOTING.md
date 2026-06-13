@@ -1,81 +1,133 @@
 # Troubleshooting Notes
 
 ## Patch checker
-It is important to re-patch ESXi after any upgrade or patches have been deployed. The status of the unlocker patches 
-can be checked using the `check` command in the unlocker folder.
 
-If the patch is installed and matches the current ESXi version, the output would look like this but the version numbers
-may differ on your host depending on any patches installed. 
+Re-run `unlock` after every ESXi upgrade or patch cycle. ESXi updates can replace `vmx`, `vmx-debug`, `libvmkctl.so`, bootbank metadata, or the loaded tardisk set.
+
+Check patch status from the unlocker folder:
+
+```sh
+./check
 ```
-VMware ESXi Unlocker 4.0.3
-==========================
-(c) 2011-2022 David Parsons
 
-Checking unlocker...
-Current version of ESXi: VMware ESXi 7.0.3 build-20328353
-Patch built for ESXi: VMware ESXi 7.0.3 build-20328353
+In 4.0.7b, `check` exits with status `0` when required checks pass and status `1` when a required check fails. Optional components such as `vmx-stats` and `libvmkctl.so` are warnings when absent because they are not present on all ESXi builds.
+
+A healthy patched host should look conceptually like this; exact ESXi build, SHA-256 values, and optional component output will differ:
+
+```text
+VMware ESXi Unlocker 4.0.7b
+===========================
+
+Checking unlocker status...
+Current ESXi version  : VMware ESXi 8.0.3 build-25429389
+Patch built for ESXi  : VMware ESXi 8.0.3 build-25429389
+ESXi version matches patch record.
+
 Checking VMTAR loaded...
-apple.v00 loaded
-Checking vmx vSMC status...
-/bin/vmx
-/bin/vmx-debug
-/bin/vmx-stats
-vmx patched
+apple.v00 loaded.
+
+Checking vmx vSMC patch status...
+/bin/vmx contains AppleComputerInc marker.
+---
+PatchSMC 4.0.7b (ESXi 6.7 / 7.x / 8 U3)
+...
+Patch Status: True
+/bin/vmx-debug contains AppleComputerInc marker.
+---
+Patch Status: True
+
+Checking libvmkctl.so patch status...
+Patch Status: True
+
 Checking smcPresent status...
 smcPresent = true
-```
-If the patch is installed and does _*NOT*_ match the current ESXi version, the output would look like this and an error 
-is displayed. You must relock, reboot and unlock the host to ensure patches are applied to the correct version.
 
-```
-VMware ESXi Unlocker 4.0.3
-==========================
-(c) 2011-2022 David Parsons
-
-Checking unlocker...
-Current version of ESXi: VMware ESXi 7.0.3 build-20328353
-Patch built for ESXi: VMware ESXi 7.0.3 build-20036589
->>> ERROR: Mis-matched files please relock/unlock to update patches <<<
+Check completed: required patch status looks OK.
 ```
 
-## VMware vCenter
-The unlocker from 4.0.3 should allow macOS guests to be started from vCenter on the patched host. If you get an error
-in vCenter you may need to do the following:
-1. Disconnect and reconnect the ESXi host in vCenter
-2. Remove and re-add the ESXi host in vCenter
+If the patch was built for a different ESXi version, `check` reports a version mismatch and exits non-zero:
 
-## Set a specific macOS Guest resolution
+```text
+>>> Version mismatch — please relock and unlock to update patches <<<
+Check completed: one or more required checks failed.
+```
 
-Installing the VMWare Tools should allow different video modes to be selected. If you have already installed them and still does not change resolution you can try this. Open Terminal and run:
+Recommended recovery flow:
 
-`sudo /Library/Application Support/VMware Tools/vmware-resolutionSet <width> <height>`
+```sh
+./relock
+reboot
+# after reboot
+./unlock
+reboot
+./check
+```
 
-where width and height are the pixel size you want. For example to get 1440x900:
+## Running VMs / Maintenance Mode
 
-`sudo /Library/Application Support/VMware Tools/vmware-resolutionSet 1440 900`
+Version 4.0.7b refuses to run `unlock` when `esxcli vm process list` detects running VMs. Shut down or migrate all VMs first.
+
+The script also warns if the host does not appear to be in Maintenance Mode. Maintenance Mode is strongly recommended because `unlock` stages and repacks ESXi bootbank modules.
+
+## apple.v00 not loaded
+
+If `check` says `apple.v00 not loaded`, the most common causes are:
+
+1. The host was patched but not rebooted.
+2. `BootModuleConfig.sh --add=apple.v00` failed.
+3. ESXi was upgraded and the bootbank state changed.
+
+Run:
+
+```sh
+esxcli system visorfs tardisk list | grep apple.v00
+ls -l /bootbank/apple.v00 /altbootbank/apple.v00 2>/dev/null
+```
+
+If the module is missing or stale, run the relock/reboot/unlock/reboot flow.
+
+## vmx or vmx-debug not patched
+
+`vmx` and `vmx-debug` are required. If either fails, do not treat the host as correctly patched.
+
+Useful checks:
+
+```sh
+./checksmc /bin/vmx
+./checksmc /bin/vmx-debug
+grep -a 'AppleComputerInc' /bin/vmx /bin/vmx-debug
+```
+
+If `patchsmc` reports a partial OSK patch state, do not continue patching blindly. Relock, reboot, refresh the ESXi binaries through a known-good host patch level, and run `unlock` again.
+
+## vmx-stats missing or not patched
+
+On some ESXi 8.x builds, `/bin/vmx-stats` is absent or a zero-byte stub. Version 4.0.7b treats this as optional and non-fatal.
+
+## libvmkctl.so missing or optional
+
+`/lib64/libvmkctl.so` is not guaranteed to exist on every ESXi build. If it is missing, the vmkctl patch is skipped. If you use vCenter and macOS guests fail to start from vCenter after host patching, try:
+
+1. Disconnect and reconnect the ESXi host in vCenter.
+2. Remove and re-add the ESXi host in vCenter.
+3. Re-run `./checkvmkctl /lib64/libvmkctl.so` if the file exists.
+
+## Set a specific macOS guest resolution
+
+Installing VMware Tools should allow different video modes to be selected. If resolution still does not change, open Terminal inside the macOS guest and run:
+
+```sh
+sudo /Library/Application\ Support/VMware\ Tools/vmware-resolutionSet <width> <height>
+```
+
+Example:
+
+```sh
+sudo /Library/Application\ Support/VMware\ Tools/vmware-resolutionSet 1440 900
+```
 
 ## AMD CPUs
-The ESXi Unlocker does not add support for AMD CPUs, that has to be done via settings for the macOS guest runnning on 
-a modern AMD CPU. These settings may allow macOS to run based on tests reported back to the project, but there is no 
-formal support for AMD CPUs with the unlocker.
 
-A patched macOS AMD kernel or OpenCore must be used to run on older AMD systems.
+The ESXi Unlocker does not add formal AMD CPU support. Any AMD workaround must be handled by guest configuration, OpenCore, or other macOS-specific tooling outside this project.
 
-1. Read this KB article to learn how to edit a guest's VMX file safely https://kb.vmware.com/s/article/2057902
-2. Add the following lines were to the VMX file:
-```
-cpuid.0.eax = "0000:0000:0000:0000:0000:0000:0000:1011"
-cpuid.0.ebx = "0111:0101:0110:1110:0110:0101:0100:0111"
-cpuid.0.ecx = "0110:1100:0110:0101:0111:0100:0110:1110"
-cpuid.0.edx = "0100:1001:0110:0101:0110:1110:0110:1001"
-cpuid.1.eax = "0000:0000:0000:0001:0000:0110:0111:0001"
-cpuid.1.ebx = "0000:0010:0000:0001:0000:1000:0000:0000"
-cpuid.1.ecx = "1000:0010:1001:1000:0010:0010:0000:0011"
-cpuid.1.edx = "0000:0111:1000:1011:1111:1011:1111:1111"
-vhv.enable = "FALSE"
-vpmc.enable = "FALSE"
-vvtd.enable = "FALSE"
-```
-3. Make sure there are no duplicate lines in the VMX file or the guest will not start and a dictionary error will
-   be displayed by VMware.
-4. You can now install and run macOS as a guest.
+If you edit a VMX file manually, make sure there are no duplicate keys. Duplicate VMX keys can prevent the VM from starting and can produce dictionary/configuration errors.

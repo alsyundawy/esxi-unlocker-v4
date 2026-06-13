@@ -4,8 +4,7 @@
 # relock - Remove macOS unlock patches from VMware ESXi
 #
 # Description : Removes the apple.v00 VMTAR module from the ESXi bootbank,
-#               reverting the host to stock (locked) state.
-#               A reboot is required for the removal to take effect.
+#               reverting the host to stock (locked) state after reboot.
 #
 # Usage       : relock [-v|-h]
 #   -v        : Enable verbose/debug output (set -x)
@@ -18,6 +17,9 @@
 # License     : MIT
 #
 # Changelog   :
+#   2026-06-13 4.0.7b alsyundawy  Add BootModuleConfig.sh command validation,
+#                                 clearer version banner, and stricter error
+#                                 reporting if apple.v00 removal fails.
 #   2026-06-10 4.0.7a alsyundawy  Clean up changelog comments.
 #   2026-06-10 4.0.7  alsyundawy  Update banner to 4.0.7.
 #   2026-06-10 4.0.6  alsyundawy  Replace read -p with POSIX printf+read.
@@ -25,26 +27,31 @@
 #   2023-01-09 4.0.5  drdonk     Fixed permissions error correctly this time!
 #   2022-08-03 4.0.0  drdonk     Initial release.
 
-# ---------------------------------------------------------------------------
-# Safety: restrict to known-good system paths to avoid PATH hijacking attacks
-# ---------------------------------------------------------------------------
 export PATH=/bin:/sbin:/usr/bin:/usr/sbin
 
-# ---------------------------------------------------------------------------
-# ANSI color helpers (POSIX printf escape sequences)
-# ---------------------------------------------------------------------------
 RED='\033[41m\033[37m'
 GRN='\033[32m'
 YLW='\033[33m'
 RST='\033[0m'
 
-# ---------------------------------------------------------------------------
-# Argument parsing
-# ---------------------------------------------------------------------------
-if [ $# -gt 1 ]; then
-    printf '%s\n' "${RED}>>> ERROR: Too many arguments <<<${RST}"
-    printf 'Usage: %s [-v|-h]\n' "$0"
+die() {
+    printf '%s\n' "${RED}>>> ERROR: $* <<<${RST}" >&2
     exit 1
+}
+
+warn() {
+    printf '%s\n' "${YLW}WARNING: $*${RST}"
+}
+
+usage() {
+    printf 'Usage: %s [-v|-h]\n' "$0"
+    printf '  -v        Enable verbose/debug output\n'
+    printf '  -h|--help Show this help message\n'
+}
+
+if [ $# -gt 1 ]; then
+    usage
+    die 'Too many arguments'
 fi
 
 if [ $# -eq 1 ]; then
@@ -54,40 +61,30 @@ if [ $# -eq 1 ]; then
             set -x
             ;;
         -h|--help)
-            printf 'Usage: %s [-v|-h]\n' "$0"
-            printf '  -v        Enable verbose/debug output\n'
-            printf '  -h|--help Show this help message\n'
+            usage
             exit 0
             ;;
         *)
-            printf '%s\n' "${RED}>>> ERROR: Invalid option: $1 <<<${RST}"
-            printf 'Usage: %s [-v|-h]\n' "$0"
-            exit 1
+            usage
+            die "Invalid option: $1"
             ;;
     esac
 fi
 
-# ---------------------------------------------------------------------------
-# Banner
-# ---------------------------------------------------------------------------
-printf 'VMware ESXi Unlocker 4.0.7\n'
-printf '==========================\n'
+command -v BootModuleConfig.sh >/dev/null 2>&1 || die 'BootModuleConfig.sh not found'
+
+printf 'VMware ESXi Unlocker 4.0.7b\n'
+printf '===========================\n'
 printf '\nRemoving unlocker...\n'
 
-# ---------------------------------------------------------------------------
-# Remove apple.v00 from bootbank if present
-# ---------------------------------------------------------------------------
-if [ -f "/bootbank/apple.v00" ]; then
+if [ -f '/bootbank/apple.v00' ]; then
     printf 'Removing apple.v00 from bootbank...\n'
-    BootModuleConfig.sh --verbose --remove=apple.v00
+    BootModuleConfig.sh --verbose --remove=apple.v00 || die 'Failed to remove apple.v00 from bootbank'
     printf '%s\n' "${GRN}apple.v00 removed from bootbank.${RST}"
 else
-    printf '%s\n' "${YLW}apple.v00 not found in bootbank — host may already be in locked state.${RST}"
+    warn 'apple.v00 not found in bootbank — host may already be in locked state'
 fi
 
-# ---------------------------------------------------------------------------
-# Prompt for reboot (POSIX-safe: printf prompt then read without -p flag)
-# ---------------------------------------------------------------------------
 printf '\nReboot the ESXi server to complete the relock (y/N)? '
 read -r response
 case "$response" in

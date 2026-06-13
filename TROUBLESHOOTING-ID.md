@@ -1,81 +1,133 @@
 # Catatan Pemecahan Masalah (Troubleshooting)
 
-## Pengecek Patch (Patch checker)
-Sangat penting untuk mem-patch ulang ESXi setelah pembaruan atau perbaikan sistem telah diterapkan. Status dari patch unlocker
-dapat diperiksa menggunakan perintah `check` yang ada di dalam folder unlocker.
+## Pengecek patch
 
-Jika patch telah terinstal dan cocok dengan versi ESXi saat ini, outputnya akan terlihat seperti ini, tetapi nomor versi
-mungkin berbeda pada host Anda bergantung pada patch apa saja yang telah diinstal.
+Jalankan ulang `unlock` setiap kali ESXi di-upgrade atau masuk siklus patch. Update ESXi dapat mengganti `vmx`, `vmx-debug`, `libvmkctl.so`, metadata bootbank, atau tardisk yang sedang dimuat.
+
+Cek status patch dari folder unlocker:
+
+```sh
+./check
+```
+
+Pada 4.0.7b, `check` keluar dengan status `0` jika pemeriksaan wajib lulus dan status `1` jika pemeriksaan wajib gagal. Komponen opsional seperti `vmx-stats` dan `libvmkctl.so` hanya menjadi peringatan jika tidak ada, karena memang tidak tersedia pada semua build ESXi.
+
+Host yang sudah terpatch dengan sehat secara konsep akan terlihat seperti ini; build ESXi, nilai SHA-256, dan output komponen opsional pasti berbeda pada host Anda:
+
 ```text
-VMware ESXi Unlocker 4.0.3
-==========================
-(c) 2011-2022 David Parsons
+VMware ESXi Unlocker 4.0.7b
+===========================
 
-Checking unlocker...
-Current version of ESXi: VMware ESXi 7.0.3 build-20328353
-Patch built for ESXi: VMware ESXi 7.0.3 build-20328353
+Checking unlocker status...
+Current ESXi version  : VMware ESXi 8.0.3 build-25429389
+Patch built for ESXi  : VMware ESXi 8.0.3 build-25429389
+ESXi version matches patch record.
+
 Checking VMTAR loaded...
-apple.v00 loaded
-Checking vmx vSMC status...
-/bin/vmx
-/bin/vmx-debug
-/bin/vmx-stats
-vmx patched
+apple.v00 loaded.
+
+Checking vmx vSMC patch status...
+/bin/vmx contains AppleComputerInc marker.
+---
+PatchSMC 4.0.7b (ESXi 6.7 / 7.x / 8 U3)
+...
+Patch Status: True
+/bin/vmx-debug contains AppleComputerInc marker.
+---
+Patch Status: True
+
+Checking libvmkctl.so patch status...
+Patch Status: True
+
 Checking smcPresent status...
 smcPresent = true
+
+Check completed: required patch status looks OK.
 ```
-Jika patch telah terinstal tetapi _*TIDAK*_ cocok dengan versi ESXi saat ini, outputnya akan terlihat seperti ini dan sebuah pesan kesalahan (error)
-akan ditampilkan. Anda harus mengunci kembali (relock), melakukan booting ulang, dan membuka kunci (unlock) host untuk memastikan patch diterapkan ke versi yang benar.
+
+Jika patch dibuat untuk versi ESXi yang berbeda, `check` akan melaporkan mismatch dan exit non-zero:
 
 ```text
-VMware ESXi Unlocker 4.0.3
-==========================
-(c) 2011-2022 David Parsons
-
-Checking unlocker...
-Current version of ESXi: VMware ESXi 7.0.3 build-20328353
-Patch built for ESXi: VMware ESXi 7.0.3 build-20036589
->>> ERROR: Mis-matched files please relock/unlock to update patches <<<
+>>> Version mismatch — please relock and unlock to update patches <<<
+Check completed: one or more required checks failed.
 ```
 
-## VMware vCenter
-Mulai dari versi 4.0.3, unlocker akan memungkinkan tamu macOS dijalankan melalui vCenter pada host yang telah di-patch. Jika Anda mendapatkan error
-di vCenter, Anda mungkin perlu melakukan hal berikut:
-1. Putuskan dan sambungkan kembali (disconnect & reconnect) host ESXi di vCenter
-2. Hapus dan tambahkan kembali host ESXi di vCenter
+Alur recovery yang disarankan:
 
-## Menetapkan resolusi Tamu macOS tertentu
+```sh
+./relock
+reboot
+# setelah reboot
+./unlock
+reboot
+./check
+```
 
-Menginstal VMWare Tools seharusnya memungkinkan Anda untuk memilih berbagai mode video. Jika Anda telah menginstalnya namun resolusi masih belum berubah, Anda dapat mencoba cara ini. Buka Terminal dan jalankan:
+## VM berjalan / Maintenance Mode
 
-`sudo /Library/Application Support/VMware Tools/vmware-resolutionSet <width> <height>`
+Versi 4.0.7b menolak menjalankan `unlock` jika `esxcli vm process list` mendeteksi masih ada VM berjalan. Matikan atau migrasikan semua VM terlebih dahulu.
 
-dengan `<width>` dan `<height>` adalah ukuran piksel yang Anda inginkan. Misalnya untuk mendapatkan 1440x900:
+Skrip juga memberi peringatan jika host tampak belum masuk Maintenance Mode. Maintenance Mode sangat disarankan karena `unlock` menyiapkan ulang dan membuat ulang modul bootbank ESXi.
 
-`sudo /Library/Application Support/VMware Tools/vmware-resolutionSet 1440 900`
+## apple.v00 tidak loaded
+
+Jika `check` menyatakan `apple.v00 not loaded`, penyebab paling umum adalah:
+
+1. Host sudah dipatch tetapi belum reboot.
+2. `BootModuleConfig.sh --add=apple.v00` gagal.
+3. ESXi sudah di-upgrade dan status bootbank berubah.
+
+Jalankan:
+
+```sh
+esxcli system visorfs tardisk list | grep apple.v00
+ls -l /bootbank/apple.v00 /altbootbank/apple.v00 2>/dev/null
+```
+
+Jika modul hilang atau stale, jalankan alur relock/reboot/unlock/reboot.
+
+## vmx atau vmx-debug tidak terpatch
+
+`vmx` dan `vmx-debug` adalah komponen wajib. Jika salah satunya gagal, jangan anggap host sudah terpatch dengan benar.
+
+Cek yang berguna:
+
+```sh
+./checksmc /bin/vmx
+./checksmc /bin/vmx-debug
+grep -a 'AppleComputerInc' /bin/vmx /bin/vmx-debug
+```
+
+Jika `patchsmc` melaporkan kondisi partial OSK patch, jangan lanjutkan patch secara paksa. Jalankan relock, reboot, pastikan biner ESXi kembali ke level patch host yang bersih, lalu jalankan `unlock` ulang.
+
+## vmx-stats hilang atau tidak terpatch
+
+Pada beberapa build ESXi 8.x, `/bin/vmx-stats` tidak ada atau hanya stub 0-byte. Versi 4.0.7b memperlakukan kondisi ini sebagai opsional dan non-fatal.
+
+## libvmkctl.so hilang atau opsional
+
+`/lib64/libvmkctl.so` tidak dijamin ada pada semua build ESXi. Jika tidak ada, patch vmkctl dilewati. Jika Anda memakai vCenter dan guest macOS gagal start dari vCenter setelah host dipatch, coba:
+
+1. Disconnect dan reconnect host ESXi di vCenter.
+2. Remove dan add ulang host ESXi di vCenter.
+3. Jalankan ulang `./checkvmkctl /lib64/libvmkctl.so` jika file tersebut tersedia.
+
+## Menetapkan resolusi guest macOS tertentu
+
+Menginstal VMware Tools seharusnya memungkinkan pemilihan berbagai mode video. Jika resolusi masih tidak berubah, buka Terminal di dalam guest macOS dan jalankan:
+
+```sh
+sudo /Library/Application\ Support/VMware\ Tools/vmware-resolutionSet <width> <height>
+```
+
+Contoh:
+
+```sh
+sudo /Library/Application\ Support/VMware\ Tools/vmware-resolutionSet 1440 900
+```
 
 ## CPU AMD
-ESXi Unlocker tidak menambahkan dukungan untuk CPU AMD, hal tersebut harus dilakukan melalui pengaturan untuk tamu macOS yang berjalan pada
-CPU AMD modern. Pengaturan ini mungkin memungkinkan macOS untuk berjalan berdasarkan tes yang dilaporkan kembali ke proyek, tetapi tidak ada
-dukungan resmi untuk CPU AMD pada unlocker.
 
-Kernel AMD macOS yang telah dimodifikasi atau OpenCore harus digunakan untuk berjalan pada sistem AMD yang lebih lawas.
+ESXi Unlocker tidak menambahkan dukungan resmi CPU AMD. Workaround AMD harus ditangani melalui konfigurasi guest, OpenCore, atau tooling macOS lain di luar proyek ini.
 
-1. Baca artikel basis pengetahuan (KB) ini untuk mempelajari cara mengedit file VMX tamu dengan aman https://kb.vmware.com/s/article/2057902
-2. Tambahkan baris-baris berikut ke dalam file VMX:
-```text
-cpuid.0.eax = "0000:0000:0000:0000:0000:0000:0000:1011"
-cpuid.0.ebx = "0111:0101:0110:1110:0110:0101:0100:0111"
-cpuid.0.ecx = "0110:1100:0110:0101:0111:0100:0110:1110"
-cpuid.0.edx = "0100:1001:0110:0101:0110:1110:0110:1001"
-cpuid.1.eax = "0000:0000:0000:0001:0000:0110:0111:0001"
-cpuid.1.ebx = "0000:0010:0000:0001:0000:1000:0000:0000"
-cpuid.1.ecx = "1000:0010:1001:1000:0010:0010:0000:0011"
-cpuid.1.edx = "0000:0111:1000:1011:1111:1011:1111:1111"
-vhv.enable = "FALSE"
-vpmc.enable = "FALSE"
-vvtd.enable = "FALSE"
-```
-3. Pastikan tidak ada baris duplikat (ganda) dalam file VMX, karena tamu tidak akan mulai dan kesalahan kamus akan
-   ditampilkan oleh VMware.
-4. Anda sekarang dapat menginstal dan menjalankan macOS sebagai sistem tamu.
+Jika Anda mengedit file VMX secara manual, pastikan tidak ada key duplikat. Key VMX duplikat dapat membuat VM gagal start dan menimbulkan error dictionary/configuration.

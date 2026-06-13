@@ -2,6 +2,36 @@
 
 Semua tanggal menggunakan format Inggris DD/MM/YY.
 
+## 13/06/26 4.0.7b
+
+_alsyundawy (Harry DS Alsyundawy - Alsyundawy IT Solution):_
+
+> Tahap hardening final untuk ESXi 6.7 / 7.x / 8 U3 per 13/06/26. Wrapper ESXi
+> tetap bersifat fork-specific; upstream DrDonk/unlocker 4.x hanya digunakan
+> sebagai referensi logika patch yang relevan, bukan sebagai rilis ESXi siap pakai.
+
+- `unlock`: Mendefinisikan variabel warna ANSI sebelum jalur error pertama; sebelumnya deteksi `python3` dapat mencetak format error kosong karena `${RED}` dan `${RST}` baru dideklarasikan setelahnya.
+- `unlock`: Menambahkan preflight command wajib ESXi (`vmware`, `esxcli`, `vmtar`, `pigz`, `BootModuleConfig.sh`, dan lain-lain) agar host tool yang hilang gagal sejak awal, bukan menghasilkan `apple.v00` rusak.
+- `unlock`: Menjadikan kegagalan `vmware -v` sebagai fatal; menulis `Unknown` ke `unlock.conf` membuat `check` tidak andal setelah update host.
+- `unlock`: Memvalidasi output `df -m .` sebagai angka sebelum dibandingkan, mencegah error ekspresi integer POSIX shell saat output `df` tidak sesuai.
+- `unlock`: Menolak patch saat masih ada VM berjalan berdasarkan `esxcli vm process list`; menampilkan peringatan jika host tampak belum masuk Maintenance Mode.
+- `unlock`: Mengganti cleanup staging `find -delete` yang tidak portabel dengan `find ... -exec rm -f {} \;` agar lebih aman pada BusyBox/ESXi.
+- `unlock`: Menjadikan kegagalan `patchsmc` pada `vmx` dan `vmx-debug` sebagai fatal; `vmx-stats` dan `libvmkctl.so` tetap opsional jika tidak berlaku pada build ESXi tertentu.
+- `unlock`: Mendeteksi dan menghapus `/bootbank/apple.v00` lama sebelum menambahkan modul baru untuk mengurangi risiko modul duplikat/stale.
+- `check`: Menambahkan exit status non-zero saat pemeriksaan wajib gagal, sementara absennya `vmx-stats`/`libvmkctl.so` tetap diperlakukan sebagai peringatan opsional.
+- `check`: Menambahkan fallback resolusi direktori skrip jika `readlink -f` tidak tersedia dan memastikan path `python3` yang terdeteksi benar-benar executable.
+- `checksmc`, `checkvmkctl`, `dumpsmc`: Menambahkan hardening PATH, fallback `SCRIPT_DIR`, validasi executable `python3`, dan pengecekan argumen `${1:-}` yang lebih aman.
+- `patchsmc`: Mengembalikan exit code sukses/gagal yang bermakna ke pemanggil; kegagalan patch pada biner wajib kini menghentikan `unlock`.
+- `patchsmc`: Memindahkan pembuatan `.bak` setelah pengecekan already-patched dan layout biner, sehingga file yang sudah patched/tidak kompatibel tidak menghasilkan backup menyesatkan.
+- `patchsmc`: Mendeteksi kondisi partial OSK patch (`OSK0` ada tetapi `OSK1` tidak ada, atau sebaliknya) dan gagal aman alih-alih memaksa re-patch buta.
+- `patchsmc`: Mencari `#KEY` tabel kedua relatif terhadap `SMC_HEADER_V1`, bukan memakai `rfind()` global, untuk mencegah marker akhir yang tidak relevan terpilih.
+- `patchsmc`, `patchvmkctl`: Mengembalikan permission file memakai `stat.S_IMODE(os.stat(...).st_mode)` alih-alih memberikan bit `st_mode` penuh ke `os.chmod()`.
+- `patchvmkctl`: Mengembalikan exit status bermakna dan tetap memperlakukan absennya `applesmc` sebagai non-fatal untuk file yang sudah patched atau build ESXi yang tidak memerlukan patch opsional ini.
+- `relock`: Menambahkan validasi `BootModuleConfig.sh` dan pelaporan gagal yang lebih tegas saat removal gagal.
+- `README.md`, `README-ID.md`: Memperbarui status proyek, kompatibilitas, panduan VMware Tools 2026, dan klarifikasi fork khusus ESXi.
+- `TROUBLESHOOTING.md`, `TROUBLESHOOTING-ID.md`: Memperbarui contoh ke 4.0.7b dan mendokumentasikan exit non-zero baru, guard VM berjalan, serta komponen opsional.
+- `LICENSE`: Menambahkan baris copyright modifikasi 2024-2026 tanpa mengubah teks lisensi MIT.
+
 ## 10/06/26 4.0.7a
 
 _alsyundawy (Harry DS Alsyundawy - Alsyundawy IT Solution):_

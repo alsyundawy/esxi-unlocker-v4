@@ -6,7 +6,7 @@
 # Description : Compares the ESXi version at patch time with the current
 #               running version, verifies that apple.v00 is loaded in the
 #               visorfs tardisk list, and confirms vmx binaries and the
-#               smcPresent flag have been correctly patched.
+#               smcPresent flag have been patched.
 #
 # Usage       : check
 #
@@ -17,143 +17,167 @@
 # License     : MIT
 #
 # Changelog   :
-#   2026-06-10 4.0.7a alsyundawy  Add SCRIPT_DIR so python3 calls work from
-#                                 any CWD. Add python3 detection for ESXi 6.7
-#                                 through 8 U3. Fix grep pattern: remove -l
-#                                 (list filenames) which conflicts with -q on
-#                                 busybox grep; use separate per-binary grep.
-#                                 Guard 'vmware -v' failure (exits 1 on error).
+#   2026-06-13 4.0.7b alsyundawy  Add reusable helpers, robust SCRIPT_DIR
+#                                 fallback, mandatory python3 executable check,
+#                                 clearer exit status for automation, missing
+#                                 required-binary guards, and final OK/FAILED
+#                                 summary without treating optional vmx-stats or
+#                                 libvmkctl absence as fatal.
+#   2026-06-10 4.0.7a alsyundawy  Add SCRIPT_DIR so python3 calls work from any
+#                                 CWD. Add python3 detection for ESXi 6.7 through
+#                                 8 U3. Fix busybox grep -q/-l conflict. Guard
+#                                 'vmware -v' failure.
 #   2026-06-10 4.0.7  alsyundawy  Update banner. SHA-256 via checksmc.
 #                                 libvmkctl.so check via patchvmkctl.
-#   2026-06-10 4.0.6  alsyundawy  Replace [[ ]] with POSIX [ ]. Replace ==
-#                                 with =. Use direct command in if. Quote all
-#                                 variables. Add docblock and color output.
+#   2026-06-10 4.0.6  alsyundawy  Replace [[ ]] with POSIX [ ]. Replace == with
+#                                 =. Use direct command in if. Quote variables.
 #   2023-01-03 4.0.4  drdonk     check correctly reports if system not patched.
 #   2022-10-22 4.0.3  drdonk     Store ESXi version; compare with stored value.
 #   2022-08-03 4.0.0  drdonk     Initial release.
 
-# ---------------------------------------------------------------------------
-# Safety: restrict to known-good system paths to avoid PATH hijacking attacks
-# ---------------------------------------------------------------------------
 export PATH=/bin:/sbin:/usr/bin:/usr/sbin
 
-# ---------------------------------------------------------------------------
-# Resolve script directory and detect python3 binary
-# ---------------------------------------------------------------------------
-SCRIPT_DIR=$(dirname "$(readlink -f "$0")")
-
-PYTHON3=''
-for _py in /usr/bin/python3 \
-           /usr/lib/vmware/venv-vsphere/bin/python3 \
-           /usr/lib/vmware/venv-65/bin/python3; do
-    [ -x "$_py" ] && PYTHON3="$_py" && break
-done
-: "${PYTHON3:=/usr/bin/python3}"
-
-# ---------------------------------------------------------------------------
-# ANSI color helpers (POSIX printf escape sequences)
-# ---------------------------------------------------------------------------
 RED='\033[41m\033[37m'
 GRN='\033[32m'
 YLW='\033[33m'
 RST='\033[0m'
+CHECK_FAILED=0
 
-# ---------------------------------------------------------------------------
-# Banner
-# ---------------------------------------------------------------------------
-printf 'VMware ESXi Unlocker 4.0.7\n'
-printf '==========================\n'
+fail_check() {
+    CHECK_FAILED=1
+    printf '%s\n' "${RED}>>> $* <<<${RST}"
+}
+
+warn() {
+    printf '%s\n' "${YLW}WARNING: $*${RST}"
+}
+
+resolve_script() {
+    if command -v readlink >/dev/null 2>&1; then
+        _resolved=$(readlink -f "$0" 2>/dev/null || true)
+        if [ -n "$_resolved" ]; then
+            printf '%s\n' "$_resolved"
+            return 0
+        fi
+    fi
+
+    case "$0" in
+        /*) printf '%s\n' "$0" ;;
+        *)  printf '%s/%s\n' "$(pwd -P)" "$0" ;;
+    esac
+}
+
+detect_python3() {
+    for _py in /usr/bin/python3 \
+               /usr/lib/vmware/venv-vsphere/bin/python3 \
+               /usr/lib/vmware/venv-65/bin/python3; do
+        if [ -x "$_py" ]; then
+            printf '%s\n' "$_py"
+            return 0
+        fi
+    done
+    return 1
+}
+
+SCRIPT=$(resolve_script)
+SCRIPT_DIR=$(dirname "$SCRIPT")
+PYTHON3=$(detect_python3) || {
+    fail_check 'python3 not found on this ESXi host'
+    PYTHON3=''
+}
+
+printf 'VMware ESXi Unlocker 4.0.7b\n'
+printf '===========================\n'
 printf '\nChecking unlocker status...\n'
 
-# ---------------------------------------------------------------------------
-# Current ESXi version (guard against vmware -v failure)
-# ---------------------------------------------------------------------------
 ESXI=$(vmware -v 2>/dev/null) || ESXI=''
 if [ -z "$ESXI" ]; then
-    printf '%s\n' "${YLW}WARNING: Could not determine ESXi version via 'vmware -v'.${RST}"
-fi
-printf 'Current ESXi version  : %s\n' "$ESXI"
-
-# ---------------------------------------------------------------------------
-# Check patch configuration file
-# ---------------------------------------------------------------------------
-if [ ! -f "/etc/unlock.conf" ]; then
-    printf '%s\n' "${RED}>>> ERROR: System has not been patched (unlock.conf missing) <<<${RST}"
-    exit 1
+    fail_check "Could not determine ESXi version via 'vmware -v'"
+else
+    printf 'Current ESXi version  : %s\n' "$ESXI"
 fi
 
-PATCH=$(cat /etc/unlock.conf)
-printf 'Patch built for ESXi  : %s\n' "$PATCH"
+if [ ! -f '/etc/unlock.conf' ]; then
+    fail_check 'System has not been patched (unlock.conf missing)'
+else
+    PATCH=$(cat /etc/unlock.conf)
+    printf 'Patch built for ESXi  : %s\n' "$PATCH"
 
-if [ "$ESXI" != "$PATCH" ]; then
-    printf '%s\n' "${RED}>>> ERROR: Version mismatch — please relock and unlock to update patches <<<${RST}"
-    exit 1
+    if [ -n "$ESXI" ] && [ "$ESXI" != "$PATCH" ]; then
+        fail_check 'Version mismatch — please relock and unlock to update patches'
+    elif [ -n "$ESXI" ]; then
+        printf '%s\n' "${GRN}ESXi version matches patch record.${RST}"
+    fi
 fi
 
-printf '%s\n' "${GRN}ESXi version matches patch record.${RST}"
-
-# ---------------------------------------------------------------------------
-# Check VMTAR tardisk is loaded
-# ---------------------------------------------------------------------------
 printf '\nChecking VMTAR loaded...\n'
-if esxcli system visorfs tardisk list | grep -q "apple.v00"; then
+if esxcli system visorfs tardisk list 2>/dev/null | grep -q 'apple.v00'; then
     printf '%s\n' "${GRN}apple.v00 loaded.${RST}"
 else
-    printf '%s\n' "${YLW}WARNING: apple.v00 not loaded — a reboot may be required.${RST}"
+    warn 'apple.v00 not loaded — a reboot may be required, or bootbank module is not registered'
 fi
 
-# ---------------------------------------------------------------------------
-# Check vmx binary patching (per-binary grep, no -l/-q mix issue)
-# ---------------------------------------------------------------------------
 printf '\nChecking vmx vSMC patch status...\n'
-
-_vmx_patched=0
 for _f in /bin/vmx /bin/vmx-debug; do
+    if [ ! -f "$_f" ] || [ ! -s "$_f" ]; then
+        fail_check "Required binary missing or empty: $_f"
+        continue
+    fi
+
     if grep -q 'AppleComputerInc' "$_f" 2>/dev/null; then
-        printf '%s\n' "${GRN}$_f is patched.${RST}"
-        _vmx_patched=1
+        printf '%s\n' "${GRN}$_f contains AppleComputerInc marker.${RST}"
     else
-        printf '%s\n' "${RED}>>> $_f is NOT patched <<<${RST}"
+        fail_check "$_f is NOT patched"
+    fi
+
+    if [ -n "$PYTHON3" ]; then
+        printf '%s\n' '---'
+        "$PYTHON3" "$SCRIPT_DIR/patchsmc" check "$_f" 2>/dev/null || CHECK_FAILED=1
     fi
 done
 
-if [ -f "/bin/vmx-stats" ] && [ -s "/bin/vmx-stats" ]; then
+if [ -f '/bin/vmx-stats' ] && [ -s '/bin/vmx-stats' ]; then
     if grep -q 'AppleComputerInc' /bin/vmx-stats 2>/dev/null; then
-        printf '%s\n' "${GRN}/bin/vmx-stats is patched.${RST}"
+        printf '%s\n' "${GRN}/bin/vmx-stats contains AppleComputerInc marker.${RST}"
     else
-        printf '%s\n' "${YLW}WARNING: /bin/vmx-stats is NOT patched.${RST}"
+        warn '/bin/vmx-stats is NOT patched; this binary is optional on many ESXi builds'
     fi
-fi
 
-if [ "$_vmx_patched" -eq 1 ]; then
-    printf '\n--- vmx detail (SHA-256 + patch status) ---\n'
-    "$PYTHON3" "$SCRIPT_DIR/patchsmc" check /bin/vmx 2>/dev/null || true
-    printf '%s\n' '---'
-    "$PYTHON3" "$SCRIPT_DIR/patchsmc" check /bin/vmx-debug 2>/dev/null || true
-    if [ -f "/bin/vmx-stats" ] && [ -s "/bin/vmx-stats" ]; then
+    if [ -n "$PYTHON3" ]; then
         printf '%s\n' '---'
-        "$PYTHON3" "$SCRIPT_DIR/patchsmc" check /bin/vmx-stats 2>/dev/null || true
+        "$PYTHON3" "$SCRIPT_DIR/patchsmc" check /bin/vmx-stats 2>/dev/null || \
+            warn 'patchsmc check failed for optional vmx-stats'
     fi
-fi
-
-# ---------------------------------------------------------------------------
-# Check libvmkctl.so patch status
-# ---------------------------------------------------------------------------
-printf '\nChecking libvmkctl.so patch status...\n'
-if [ -f "/lib64/libvmkctl.so" ] && [ -s "/lib64/libvmkctl.so" ]; then
-    "$PYTHON3" "$SCRIPT_DIR/patchvmkctl" check /lib64/libvmkctl.so 2>/dev/null || \
-        printf '%s\n' "${YLW}WARNING: patchvmkctl check failed.${RST}"
 else
-    printf '%s\n' "${YLW}WARNING: /lib64/libvmkctl.so missing — vmkctl patch not applicable.${RST}"
+    printf '%s\n' "${YLW}SKIP: /bin/vmx-stats missing or empty — optional on ESXi 8.x.${RST}"
 fi
 
-# ---------------------------------------------------------------------------
-# Check smcPresent hardware flag via vim-cmd
-# ---------------------------------------------------------------------------
+printf '\nChecking libvmkctl.so patch status...\n'
+if [ -f '/lib64/libvmkctl.so' ] && [ -s '/lib64/libvmkctl.so' ]; then
+    if [ -n "$PYTHON3" ]; then
+        "$PYTHON3" "$SCRIPT_DIR/patchvmkctl" check /lib64/libvmkctl.so 2>/dev/null || \
+            warn 'patchvmkctl check returned non-zero; vCenter smcPresent behaviour may need manual review'
+    fi
+else
+    printf '%s\n' "${YLW}SKIP: /lib64/libvmkctl.so missing — optional vmkctl patch not applicable.${RST}"
+fi
+
 printf '\nChecking smcPresent status...\n'
-vim-cmd hostsvc/hosthardware 2>/dev/null | grep smcPresent | cut -d ',' -f 1 | \
-    sed 's/^[[:space:]]*//' || \
-    printf '%s\n' "${YLW}WARNING: Could not retrieve smcPresent from vim-cmd.${RST}"
+if command -v vim-cmd >/dev/null 2>&1; then
+    _smc=$(vim-cmd hostsvc/hosthardware 2>/dev/null | grep smcPresent | cut -d ',' -f 1 | sed 's/^[[:space:]]*//')
+    if [ -n "$_smc" ]; then
+        printf '%s\n' "$_smc"
+    else
+        warn 'Could not retrieve smcPresent from vim-cmd'
+    fi
+else
+    warn 'vim-cmd not found; cannot query smcPresent'
+fi
 
-exit 0
+if [ "$CHECK_FAILED" -eq 0 ]; then
+    printf '\n%s\n' "${GRN}Check completed: required patch status looks OK.${RST}"
+    exit 0
+fi
 
+printf '\n%s\n' "${RED}Check completed: one or more required checks failed.${RST}"
+exit 1
