@@ -2,6 +2,21 @@
 
 Semua tanggal menggunakan format Inggris DD/MM/YY.
 
+## 27/07/26 4.0.7c
+
+_alsyundawy (Harry DS Alsyundawy - Alsyundawy IT Solution):_
+
+> Tahap perataan keamanan, pengerasan (hardening), dan optimasi performa skrip shell untuk ESXi 6.7 / 7.x / 8 U3.
+
+- `unlock`: Menambahkan signal handler `trap cleanup` (`EXIT`, `INT`, `TERM`, `HUP`) untuk menghapus direktori staging sementara dan file arsip parsial (`./tmp`, `apple.tar`, `apple.vtar`, `apple.vtar.v00`) secara otomatis saat skrip selesai atau dihentikan secara prematur.
+- `unlock`: Menambahkan fallback `command -v "$0"` pada `resolve_script()` untuk memastikan resolusi path yang andal saat skrip dieksekusi melalui `$PATH` tanpa awalan direktori.
+- `unlock`: Menambahkan fallback `$PATH` melalui `command -v python3` pada `detect_python3()` untuk menemukan Python 3 pada lingkungan host non-standar.
+- `unlock`: Menerapkan pemeriksaan error yang ketat pada operasi `chmod` untuk biner opsional (`vmx-stats`, `libvmkctl.so`) jika ada, menggantikan penekanan error `|| true`.
+- `unlock`, `relock`: Menambahkan perlindungan eksekusi non-interaktif (`2>/dev/null || response='n'`) pada prompt reboot untuk mencegah error shell saat dijalankan melalui SSH pipe, cron, atau skrip otomatis.
+- `check`: Menambahkan validasi konten `unlock.conf` non-kosong untuk memastikan pembandingan versi tidak mengevaluasi string kosong.
+- `check`: Mengoptimalkan pipeline query `smcPresent` dengan menggabungkan `grep | cut | sed` menjadi satu perintah `awk` agar eksekusi lebih cepat dan hemat resource.
+- `checksmc`, `checkvmkctl`, `dumpsmc`: Menambahkan validasi file target (`[ -f "$1" ]`) pada skrip wrapper untuk menampilkan pesan error yang jelas sebelum memanggil patcher Python.
+
 ## 13/06/26 4.0.7b
 
 _alsyundawy (Harry DS Alsyundawy - Alsyundawy IT Solution):_
@@ -130,47 +145,59 @@ _alsyundawy (Harry DS Alsyundawy - Alsyundawy IT Solution):_
 
 ## 03/03/23 4.0.6
 
-### Ini adalah rilis terakhir dari ESXi Unlocker.
+### Ini adalah rilis terakhir dari ESXi Unlocker
 
 _drdonk:_
-* Merapikan kode
-* Menambahkan penjelasan bahwa unlocker tidak dapat menambahkan dukungan AMD tetapi beberapa pengaturan di file VMX mungkin berfungsi
+
+- Merapikan kode
+- Menambahkan penjelasan bahwa unlocker tidak dapat menambahkan dukungan AMD tetapi beberapa pengaturan di file VMX mungkin berfungsi
 
 ## 09/01/23 4.0.5
+
 _drdonk:_
-* Memperbaiki kesalahan izin dengan benar kali ini!
+
+- Memperbaiki kesalahan izin dengan benar kali ini!
 
 ## 03/01/23 4.0.4
+
 _drdonk:_
-* Perintah `check` dengan benar melaporkan jika sistem belum di-patch
-* Perintah `unlock` memeriksa ruang disk kosong sebelum mem-patch
-* Perintah `unlock` memeriksa instalasi V3 sebelumnya sebelum mem-patch
-* Memperbaiki kesalahan jika libvmkctl.so sudah di-patch
-* Menghapus bendera (flag) unlocker yang tidak digunakan (KPPW/KPST) agar cocok dengan versi Go
-* Memperbarui semua tanggal hak cipta menjadi 2023
-* Memastikan bahwa file yang akan di-patch memiliki izin tulis sebelum mem-patch, karena datastore NFS memberlakukan 
-izin R/W dengan benar tetapi VMFS3 tidak, dan dapat mem-patch dengan bendera read only (hanya baca) yang disetel.
+
+- Perintah `check` dengan benar melaporkan jika sistem belum di-patch
+- Perintah `unlock` memeriksa ruang disk kosong sebelum mem-patch
+- Perintah `unlock` memeriksa instalasi V3 sebelumnya sebelum mem-patch
+- Memperbaiki kesalahan jika libvmkctl.so sudah di-patch
+- Menghapus bendera (flag) unlocker yang tidak digunakan (KPPW/KPST) agar cocok dengan versi Go
+- Memperbarui semua tanggal hak cipta menjadi 2023
+- Memastikan bahwa file yang akan di-patch memiliki izin tulis sebelum mem-patch, karena datastore NFS memberlakukan
+  izin R/W dengan benar tetapi VMFS3 tidak, dan dapat mem-patch dengan bendera read only (hanya baca) yang disetel.
 
 ## 22/10/22 4.0.3
+
 _drdonk:_
-* Mengembalikan patch libvmkctl untuk memungkinkan vCenter mem-booting VM macOS di host ESXi
-* Mengembalikan muatan (load) pada saat boot sehingga patch libvmkctl dimuat ketika hostd dimulai
-* Menyimpan versi ESXi dengan file yang di-patch
-* Perintah `check` membandingkan versi ESXi saat ini dan yang tersimpan
+
+- Mengembalikan patch libvmkctl untuk memungkinkan vCenter mem-booting VM macOS di host ESXi
+- Mengembalikan muatan (load) pada saat boot sehingga patch libvmkctl dimuat ketika hostd dimulai
+- Menyimpan versi ESXi dengan file yang di-patch
+- Perintah `check` membandingkan versi ESXi saat ini dan yang tersimpan
 
 ## 22/09/22 4.0.2
+
 Terima kasih kepada _lucaskamp_ dan penguji _anonim_ atas pengujiannya.
- 
+
 _drdonk:_
-* Kembali ke proses baca/tulis file biner di patchsmc alih-alih menggunakan mmap, yang menyebabkan kesalahan diam-diam selama proses pem-patch-an
-yang berujung pada kegagalan patch.
-* Memodifikasi format VMTAR dari PSIGNED-XZ menjadi GZIP
-* Perintah sekarang diharuskan berjalan setiap boot ESXi untuk menghindari kemungkinan "Purple Screens of Death" (PSOD).
-* Memastikan file vmx memiliki izin yang benar, 4555/-r-sr-xr-x, pada arsip apple.v00
+
+- Kembali ke proses baca/tulis file biner di patchsmc alih-alih menggunakan mmap, yang menyebabkan kesalahan diam-diam selama proses pem-patch-an
+  yang berujung pada kegagalan patch.
+- Memodifikasi format VMTAR dari PSIGNED-XZ menjadi GZIP
+- Perintah sekarang diharuskan berjalan setiap boot ESXi untuk menghindari kemungkinan "Purple Screens of Death" (PSOD).
+- Memastikan file vmx memiliki izin yang benar, 4555/-r-sr-xr-x, pada arsip apple.v00
 
 ## 26/01/22 4.0.1
+
 _drdonk:_
-* Memperbaiki bit +x yang hilang pada checksmc, dumpsmc dan relock
+
+- Memperbaiki bit +x yang hilang pada checksmc, dumpsmc dan relock
 
 ## 03/08/22 4.0.0
-* Rilis perdana
+
+- Rilis perdana

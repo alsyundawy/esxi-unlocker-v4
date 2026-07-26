@@ -17,6 +17,8 @@
 # License     : MIT
 #
 # Changelog   :
+#   2026-07-27 4.0.7c alsyundawy  Add non-interactive prompt protection and
+#                                 standardized script path resolution.
 #   2026-06-13 4.0.7b alsyundawy  Add BootModuleConfig.sh command validation,
 #                                 clearer version banner, and stricter error
 #                                 reporting if apple.v00 removal fails.
@@ -73,7 +75,7 @@ fi
 
 command -v BootModuleConfig.sh >/dev/null 2>&1 || die 'BootModuleConfig.sh not found'
 
-printf 'VMware ESXi Unlocker 4.0.7b\n'
+printf 'VMware ESXi Unlocker 4.0.7c\n'
 printf '===========================\n'
 printf '\nRemoving unlocker...\n'
 
@@ -86,7 +88,7 @@ else
 fi
 
 printf '\nReboot the ESXi server to complete the relock (y/N)? '
-read -r response
+read -r response 2>/dev/null || response='n'
 case "$response" in
     [yY])
         printf 'Rebooting the ESXi server now...\n'

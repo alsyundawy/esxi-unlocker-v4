@@ -75,7 +75,7 @@ Untuk tracing shell verbose:
 ## 3. File
 
 | File | Fungsi |
-|---|---|
+| --- | --- |
 | `unlock` | Menyiapkan biner ESXi, menerapkan patch, membuat `apple.v00`, dan mendaftarkan modul bootbank. |
 | `relock` | Menghapus `apple.v00` dari konfigurasi bootbank ESXi. |
 | `check` | Mengecek kecocokan versi ESXi, status load `apple.v00`, status patch vmx, dan status opsional `libvmkctl.so`. |

@@ -25,6 +25,11 @@
 # License     : MIT
 #
 # Changelog   :
+#   2026-07-27 4.0.7c alsyundawy  Add trap cleanup handler for temporary staging
+#                                 directories, fallback command path resolution
+#                                 in resolve_script, python3 PATH fallback, non-
+#                                 interactive read prompt protection, and strict
+#                                 chmod error validation for optional binaries.
 #   2026-06-13 4.0.7b alsyundawy  Define ANSI colors before first use. Add
 #                                 command preflight checks, fatal vmware -v
 #                                 guard, numeric disk-space validation, running
@@ -57,6 +62,13 @@ GRN='\033[32m'
 YLW='\033[33m'
 RST='\033[0m'
 
+# shellcheck disable=SC2329
+cleanup() {
+    rm -rf ./tmp 2>/dev/null || true
+    rm -f ./apple.tar ./apple.vtar ./apple.vtar.v00 2>/dev/null || true
+}
+trap cleanup EXIT INT TERM HUP
+
 die() {
     printf '%s\n' "${RED}>>> ERROR: $* <<<${RST}" >&2
     exit 1
@@ -81,7 +93,15 @@ resolve_script() {
 
     case "$0" in
         /*) printf '%s\n' "$0" ;;
-        *)  printf '%s/%s\n' "$(pwd -P)" "$0" ;;
+        */*) printf '%s/%s\n' "$(pwd -P)" "$0" ;;
+        *)
+            _cmd_path=$(command -v "$0" 2>/dev/null || true)
+            if [ -n "$_cmd_path" ]; then
+                printf '%s\n' "$_cmd_path"
+            else
+                printf '%s/%s\n' "$(pwd -P)" "$0"
+            fi
+            ;;
     esac
 }
 
@@ -94,6 +114,10 @@ detect_python3() {
             return 0
         fi
     done
+    if _py=$(command -v python3 2>/dev/null) && [ -x "$_py" ]; then
+        printf '%s\n' "$_py"
+        return 0
+    fi
     return 1
 }
 
@@ -125,7 +149,7 @@ if [ $# -eq 1 ]; then
     esac
 fi
 
-printf 'VMware ESXi Unlocker 4.0.7b\n'
+printf 'VMware ESXi Unlocker 4.0.7c\n'
 printf '===========================\n'
 printf 'Compatibility: ESXi 6.7 / 7.x / 8 U3\n'
 printf 'Reference    : DrDonk/unlocker 4.x patch logic; ESXi port is fork-specific\n'
@@ -203,8 +227,12 @@ else
 fi
 
 chmod 4755 ./tmp/bin/vmx ./tmp/bin/vmx-debug || die 'Failed to chmod staged vmx binaries writable/setuid'
-[ -f ./tmp/bin/vmx-stats ] && chmod 4755 ./tmp/bin/vmx-stats || true
-[ -f ./tmp/lib64/libvmkctl.so ] && chmod 0755 ./tmp/lib64/libvmkctl.so || true
+if [ -f ./tmp/bin/vmx-stats ]; then
+    chmod 4755 ./tmp/bin/vmx-stats || die 'Failed to chmod staged vmx-stats'
+fi
+if [ -f ./tmp/lib64/libvmkctl.so ]; then
+    chmod 0755 ./tmp/lib64/libvmkctl.so || die 'Failed to chmod staged libvmkctl.so'
+fi
 
 printf '%s\n' "$ESXI_VERSION" > ./tmp/etc/unlock.conf || die 'Failed to write staged unlock.conf'
 
@@ -230,8 +258,12 @@ find ./tmp \( -name '*.bak' -o -name '*.sha256' \) -type f -exec rm -f {} \; 2>/
     die 'Failed to purge staged audit files before building apple.v00'
 
 chmod 4555 ./tmp/bin/vmx ./tmp/bin/vmx-debug || die 'Failed to set final vmx permissions'
-[ -f ./tmp/bin/vmx-stats ] && chmod 4555 ./tmp/bin/vmx-stats || true
-[ -f ./tmp/lib64/libvmkctl.so ] && chmod 0555 ./tmp/lib64/libvmkctl.so || true
+if [ -f ./tmp/bin/vmx-stats ]; then
+    chmod 4555 ./tmp/bin/vmx-stats || die 'Failed to set final vmx-stats permissions'
+fi
+if [ -f ./tmp/lib64/libvmkctl.so ]; then
+    chmod 0555 ./tmp/lib64/libvmkctl.so || die 'Failed to set final libvmkctl.so permissions'
+fi
 
 printf '\nBuilding apple.v00 VMTAR file...\n'
 ( cd ./tmp && tar cf ../apple.tar ./* ) || die 'Failed to create apple.tar'
@@ -252,11 +284,11 @@ if [ -f '/bootbank/apple.v00' ]; then
 fi
 BootModuleConfig.sh --verbose --add=apple.v00 || die 'BootModuleConfig add failed for apple.v00'
 
-printf '\n%s\n' "${GRN}Unlocker 4.0.7b installed successfully.${RST}"
+printf '\n%s\n' "${GRN}Unlocker 4.0.7c installed successfully.${RST}"
 printf 'ESXi version patched: %s\n' "$ESXI_VERSION"
 
 printf '\nReboot the ESXi server to activate the unlocker (y/N)? '
-read -r response
+read -r response 2>/dev/null || response='n'
 case "$response" in
     [yY])
         printf 'Rebooting the ESXi server now...\n'

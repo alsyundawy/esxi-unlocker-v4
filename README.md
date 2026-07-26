@@ -75,7 +75,7 @@ For verbose shell tracing:
 ## 3. Files
 
 | File | Purpose |
-|---|---|
+| --- | --- |
 | `unlock` | Stages ESXi binaries, applies patches, builds `apple.v00`, and registers the bootbank module. |
 | `relock` | Removes `apple.v00` from ESXi bootbank configuration. |
 | `check` | Checks ESXi version match, `apple.v00` load status, vmx patch state, and optional `libvmkctl.so` status. |

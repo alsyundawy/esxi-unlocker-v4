@@ -6,6 +6,8 @@
 # Copyright (c) 2024-2026 Harry DS Alsyundawy - Alsyundawy IT Solution
 # License: MIT
 # Changelog:
+#   2026-07-27 4.0.7c alsyundawy  Add target file existence check, command path
+#                                 fallback resolution, and python3 PATH fallback.
 #   2026-06-13 4.0.7b alsyundawy  Add PATH hardening, robust SCRIPT_DIR
 #                                 fallback when readlink -f is unavailable,
 #                                 executable python3 validation, and safer
@@ -28,7 +30,15 @@ resolve_script() {
 
     case "$0" in
         /*) printf '%s\n' "$0" ;;
-        *)  printf '%s/%s\n' "$(pwd -P)" "$0" ;;
+        */*) printf '%s/%s\n' "$(pwd -P)" "$0" ;;
+        *)
+            _cmd_path=$(command -v "$0" 2>/dev/null || true)
+            if [ -n "$_cmd_path" ]; then
+                printf '%s\n' "$_cmd_path"
+            else
+                printf '%s/%s\n' "$(pwd -P)" "$0"
+            fi
+            ;;
     esac
 }
 
@@ -41,11 +51,20 @@ detect_python3() {
             return 0
         fi
     done
+    if _py=$(command -v python3 2>/dev/null) && [ -x "$_py" ]; then
+        printf '%s\n' "$_py"
+        return 0
+    fi
     return 1
 }
 
 if [ -z "${1:-}" ]; then
     printf 'Usage: %s <vmx-filename>\n' "$0" >&2
+    exit 1
+fi
+
+if [ ! -f "$1" ]; then
+    printf 'ERROR: Target file not found or not a regular file: %s\n' "$1" >&2
     exit 1
 fi
 

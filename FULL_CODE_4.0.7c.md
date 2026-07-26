@@ -1,10 +1,10 @@
-# ESXi Unlocker V4 4.0.7b - Full Code
+# ESXi Unlocker V4 4.0.7c - Full Code
 
-Generated from the reviewed 4.0.7b package.
+Generated from the reviewed 4.0.7c package.
 
 ## README.md
 
-```text
+````markdown
 # macOS Unlocker V4 for VMware ESXi
 
 ## IMPORTANT: Security and licensing notice
@@ -82,7 +82,7 @@ For verbose shell tracing:
 ## 3. Files
 
 | File | Purpose |
-|---|---|
+| --- | --- |
 | `unlock` | Stages ESXi binaries, applies patches, builds `apple.v00`, and registers the bootbank module. |
 | `relock` | Removes `apple.v00` from ESXi bootbank configuration. |
 | `check` | Checks ESXi version match, `apple.v00` load status, vmx patch state, and optional `libvmkctl.so` status. |
@@ -110,12 +110,11 @@ Thanks to lucaskamp and other testers who helped validate Unlocker version 4 beh
 ## 6. Changelog
 
 See [CHANGELOG.md](CHANGELOG.md) for the complete version history.
-
-```
+````
 
 ## README-ID.md
 
-```text
+````markdown
 # macOS Unlocker V4 untuk VMware ESXi
 
 ## PENTING: Catatan keamanan dan lisensi
@@ -193,7 +192,7 @@ Untuk tracing shell verbose:
 ## 3. File
 
 | File | Fungsi |
-|---|---|
+| --- | --- |
 | `unlock` | Menyiapkan biner ESXi, menerapkan patch, membuat `apple.v00`, dan mendaftarkan modul bootbank. |
 | `relock` | Menghapus `apple.v00` dari konfigurasi bootbank ESXi. |
 | `check` | Mengecek kecocokan versi ESXi, status load `apple.v00`, status patch vmx, dan status opsional `libvmkctl.so`. |
@@ -221,8 +220,7 @@ Terima kasih kepada lucaskamp dan para penguji lain yang membantu validasi peril
 ## 6. Log perubahan
 
 Lihat [CHANGELOG-ID.md](CHANGELOG-ID.md) untuk daftar lengkap perubahan setiap versi.
-
-```
+````
 
 ## CHANGELOG.md
 
@@ -230,6 +228,21 @@ Lihat [CHANGELOG-ID.md](CHANGELOG-ID.md) untuk daftar lengkap perubahan setiap v
 # Changes
 
 All dates are UK DD/MM/YY format.
+
+## 27/07/26 4.0.7c
+
+_alsyundawy (Harry DS Alsyundawy - Alsyundawy IT Solution):_
+
+> Hardening and performance optimization pass for ESXi 6.7 / 7.x / 8 U3 shell scripts.
+
+- `unlock`: Add `trap cleanup` signal handler (`EXIT`, `INT`, `TERM`, `HUP`) to automatically purge temporary staging directories and partial archive files (`./tmp`, `apple.tar`, `apple.vtar`, `apple.vtar.v00`) upon script completion or premature abort.
+- `unlock`: Add `command -v "$0"` fallback to `resolve_script()` for reliable path resolution when script is executed via `$PATH` without directory prefix.
+- `unlock`: Add `$PATH` fallback via `command -v python3` in `detect_python3()` to locate Python 3 in non-standard host environments.
+- `unlock`: Enforce strict error checking on `chmod` operations for optional binaries (`vmx-stats`, `libvmkctl.so`) when present, replacing silent `|| true` suppressions.
+- `unlock`, `relock`: Add non-interactive execution protection (`2>/dev/null || response='n'`) to the reboot prompt to prevent shell errors when invoked via non-interactive SSH pipes, cron, or automated scripts.
+- `check`: Add validation for non-empty `unlock.conf` content to ensure version comparisons do not evaluate against empty strings.
+- `check`: Optimize `smcPresent` query pipeline by consolidating `grep | cut | sed` into a single `awk` statement for faster execution and lower resource overhead.
+- `checksmc`, `checkvmkctl`, `dumpsmc`: Add explicit target file validation (`[ -f "$1" ]`) in wrapper scripts to report clean error messages before invoking Python patchers.
 
 ## 13/06/26 4.0.7b
 
@@ -359,51 +372,62 @@ _alsyundawy (Harry DS Alsyundawy - Alsyundawy IT Solution):_
 
 ## 03/03/23 4.0.6
 
-### This is the last release of ESXi Unlocker.
+### This is the last release of ESXi Unlocker
 
 _drdonk:_
-* Tidy up of code
-* Add explanantion that the unlocker cannot add AMD support but some settings in VMX file may work
+
+- Tidy up of code
+- Add explanantion that the unlocker cannot add AMD support but some settings in VMX file may work
 
 ## 09/01/23 4.0.5
+
 _drdonk:_
-* Fixed permissions error correctly this time!
+
+- Fixed permissions error correctly this time!
 
 ## 03/01/23 4.0.4
+
 _drdonk:_
-* `check` command correctly reports if system not patched
-* `unlock` command checks for free disk space before patching
-* `unlock`  command checks for previous V3 installation before patching
-* Fixed error if libvmkctl.so already patched
-* Removed an unused unlocker flag (KPPW/KPST) to match Go version
-* Update all copyright dates to 2023
-* Make sure the files to be patched have write permissions before patching as NFS datastores correctly enforce 
-R/W permissions but VMFS3 does not and can patch with read only flag set.
+
+- `check` command correctly reports if system not patched
+- `unlock` command checks for free disk space before patching
+- `unlock`  command checks for previous V3 installation before patching
+- Fixed error if libvmkctl.so already patched
+- Removed an unused unlocker flag (KPPW/KPST) to match Go version
+- Update all copyright dates to 2023
+- Make sure the files to be patched have write permissions before patching as NFS datastores correctly enforce
+  R/W permissions but VMFS3 does not and can patch with read only flag set.
 
 ## 22/10/22 4.0.3
+
 _drdonk:_
-* Reinstate libvmkctl patch to allow vCenter to boot macOS VMs on ESXi host
-* Reinstate boot time load so the libvmkctl patch is loaded when hostd starts
-* Store ESXi version with patched files
-* `check` command compares current and stored ESXi versions
+
+- Reinstate libvmkctl patch to allow vCenter to boot macOS VMs on ESXi host
+- Reinstate boot time load so the libvmkctl patch is loaded when hostd starts
+- Store ESXi version with patched files
+- `check` command compares current and stored ESXi versions
 
 ## 22/09/22 4.0.2
+
 Thanks to _lucaskamp_ and an _anonymous_ tester for testing.
- 
+
 _drdonk:_
-* Revert to binary file read/writes in patchsmc instead of using mmap, which caused silent errors during the patching 
-process leading to failed patches.
-* Modified VMTAR format from PSIGNED-XZ to GZIP
-* Commands are now required to be run each boot of ESXi to avoid possible "Purple Screens of Death" (PSOD).
-* Ensure vmx files have correct permissions, 4555/-r-sr-xr-x,  in apple.v00 archive
+
+- Revert to binary file read/writes in patchsmc instead of using mmap, which caused silent errors during the patching
+  process leading to failed patches.
+- Modified VMTAR format from PSIGNED-XZ to GZIP
+- Commands are now required to be run each boot of ESXi to avoid possible "Purple Screens of Death" (PSOD).
+- Ensure vmx files have correct permissions, 4555/-r-sr-xr-x,  in apple.v00 archive
 
 ## 26/01/22 4.0.1
+
 _drdonk:_
-* Fix missing +x bit on checksmc, dumpsmc and relock
+
+- Fix missing +x bit on checksmc, dumpsmc and relock
 
 ## 03/08/22 4.0.0
-* Initial release
 
+- Initial release
 ```
 
 ## CHANGELOG-ID.md
@@ -412,6 +436,21 @@ _drdonk:_
 # Log Perubahan (Changelog)
 
 Semua tanggal menggunakan format Inggris DD/MM/YY.
+
+## 27/07/26 4.0.7c
+
+_alsyundawy (Harry DS Alsyundawy - Alsyundawy IT Solution):_
+
+> Tahap perataan keamanan, pengerasan (hardening), dan optimasi performa skrip shell untuk ESXi 6.7 / 7.x / 8 U3.
+
+- `unlock`: Menambahkan signal handler `trap cleanup` (`EXIT`, `INT`, `TERM`, `HUP`) untuk menghapus direktori staging sementara dan file arsip parsial (`./tmp`, `apple.tar`, `apple.vtar`, `apple.vtar.v00`) secara otomatis saat skrip selesai atau dihentikan secara prematur.
+- `unlock`: Menambahkan fallback `command -v "$0"` pada `resolve_script()` untuk memastikan resolusi path yang andal saat skrip dieksekusi melalui `$PATH` tanpa awalan direktori.
+- `unlock`: Menambahkan fallback `$PATH` melalui `command -v python3` pada `detect_python3()` untuk menemukan Python 3 pada lingkungan host non-standar.
+- `unlock`: Menerapkan pemeriksaan error yang ketat pada operasi `chmod` untuk biner opsional (`vmx-stats`, `libvmkctl.so`) jika ada, menggantikan penekanan error `|| true`.
+- `unlock`, `relock`: Menambahkan perlindungan eksekusi non-interaktif (`2>/dev/null || response='n'`) pada prompt reboot untuk mencegah error shell saat dijalankan melalui SSH pipe, cron, atau skrip otomatis.
+- `check`: Menambahkan validasi konten `unlock.conf` non-kosong untuk memastikan pembandingan versi tidak mengevaluasi string kosong.
+- `check`: Mengoptimalkan pipeline query `smcPresent` dengan menggabungkan `grep | cut | sed` menjadi satu perintah `awk` agar eksekusi lebih cepat dan hemat resource.
+- `checksmc`, `checkvmkctl`, `dumpsmc`: Menambahkan validasi file target (`[ -f "$1" ]`) pada skrip wrapper untuk menampilkan pesan error yang jelas sebelum memanggil patcher Python.
 
 ## 13/06/26 4.0.7b
 
@@ -541,56 +580,67 @@ _alsyundawy (Harry DS Alsyundawy - Alsyundawy IT Solution):_
 
 ## 03/03/23 4.0.6
 
-### Ini adalah rilis terakhir dari ESXi Unlocker.
+### Ini adalah rilis terakhir dari ESXi Unlocker
 
 _drdonk:_
-* Merapikan kode
-* Menambahkan penjelasan bahwa unlocker tidak dapat menambahkan dukungan AMD tetapi beberapa pengaturan di file VMX mungkin berfungsi
+
+- Merapikan kode
+- Menambahkan penjelasan bahwa unlocker tidak dapat menambahkan dukungan AMD tetapi beberapa pengaturan di file VMX mungkin berfungsi
 
 ## 09/01/23 4.0.5
+
 _drdonk:_
-* Memperbaiki kesalahan izin dengan benar kali ini!
+
+- Memperbaiki kesalahan izin dengan benar kali ini!
 
 ## 03/01/23 4.0.4
+
 _drdonk:_
-* Perintah `check` dengan benar melaporkan jika sistem belum di-patch
-* Perintah `unlock` memeriksa ruang disk kosong sebelum mem-patch
-* Perintah `unlock` memeriksa instalasi V3 sebelumnya sebelum mem-patch
-* Memperbaiki kesalahan jika libvmkctl.so sudah di-patch
-* Menghapus bendera (flag) unlocker yang tidak digunakan (KPPW/KPST) agar cocok dengan versi Go
-* Memperbarui semua tanggal hak cipta menjadi 2023
-* Memastikan bahwa file yang akan di-patch memiliki izin tulis sebelum mem-patch, karena datastore NFS memberlakukan 
-izin R/W dengan benar tetapi VMFS3 tidak, dan dapat mem-patch dengan bendera read only (hanya baca) yang disetel.
+
+- Perintah `check` dengan benar melaporkan jika sistem belum di-patch
+- Perintah `unlock` memeriksa ruang disk kosong sebelum mem-patch
+- Perintah `unlock` memeriksa instalasi V3 sebelumnya sebelum mem-patch
+- Memperbaiki kesalahan jika libvmkctl.so sudah di-patch
+- Menghapus bendera (flag) unlocker yang tidak digunakan (KPPW/KPST) agar cocok dengan versi Go
+- Memperbarui semua tanggal hak cipta menjadi 2023
+- Memastikan bahwa file yang akan di-patch memiliki izin tulis sebelum mem-patch, karena datastore NFS memberlakukan
+  izin R/W dengan benar tetapi VMFS3 tidak, dan dapat mem-patch dengan bendera read only (hanya baca) yang disetel.
 
 ## 22/10/22 4.0.3
+
 _drdonk:_
-* Mengembalikan patch libvmkctl untuk memungkinkan vCenter mem-booting VM macOS di host ESXi
-* Mengembalikan muatan (load) pada saat boot sehingga patch libvmkctl dimuat ketika hostd dimulai
-* Menyimpan versi ESXi dengan file yang di-patch
-* Perintah `check` membandingkan versi ESXi saat ini dan yang tersimpan
+
+- Mengembalikan patch libvmkctl untuk memungkinkan vCenter mem-booting VM macOS di host ESXi
+- Mengembalikan muatan (load) pada saat boot sehingga patch libvmkctl dimuat ketika hostd dimulai
+- Menyimpan versi ESXi dengan file yang di-patch
+- Perintah `check` membandingkan versi ESXi saat ini dan yang tersimpan
 
 ## 22/09/22 4.0.2
+
 Terima kasih kepada _lucaskamp_ dan penguji _anonim_ atas pengujiannya.
- 
+
 _drdonk:_
-* Kembali ke proses baca/tulis file biner di patchsmc alih-alih menggunakan mmap, yang menyebabkan kesalahan diam-diam selama proses pem-patch-an
-yang berujung pada kegagalan patch.
-* Memodifikasi format VMTAR dari PSIGNED-XZ menjadi GZIP
-* Perintah sekarang diharuskan berjalan setiap boot ESXi untuk menghindari kemungkinan "Purple Screens of Death" (PSOD).
-* Memastikan file vmx memiliki izin yang benar, 4555/-r-sr-xr-x, pada arsip apple.v00
+
+- Kembali ke proses baca/tulis file biner di patchsmc alih-alih menggunakan mmap, yang menyebabkan kesalahan diam-diam selama proses pem-patch-an
+  yang berujung pada kegagalan patch.
+- Memodifikasi format VMTAR dari PSIGNED-XZ menjadi GZIP
+- Perintah sekarang diharuskan berjalan setiap boot ESXi untuk menghindari kemungkinan "Purple Screens of Death" (PSOD).
+- Memastikan file vmx memiliki izin yang benar, 4555/-r-sr-xr-x, pada arsip apple.v00
 
 ## 26/01/22 4.0.1
+
 _drdonk:_
-* Memperbaiki bit +x yang hilang pada checksmc, dumpsmc dan relock
+
+- Memperbaiki bit +x yang hilang pada checksmc, dumpsmc dan relock
 
 ## 03/08/22 4.0.0
-* Rilis perdana
 
+- Rilis perdana
 ```
 
 ## TROUBLESHOOTING.md
 
-```text
+````markdown
 # Troubleshooting Notes
 
 ## Patch checker
@@ -724,12 +774,11 @@ sudo /Library/Application\ Support/VMware\ Tools/vmware-resolutionSet 1440 900
 The ESXi Unlocker does not add formal AMD CPU support. Any AMD workaround must be handled by guest configuration, OpenCore, or other macOS-specific tooling outside this project.
 
 If you edit a VMX file manually, make sure there are no duplicate keys. Duplicate VMX keys can prevent the VM from starting and can produce dictionary/configuration errors.
-
-```
+````
 
 ## TROUBLESHOOTING-ID.md
 
-```text
+````markdown
 # Catatan Pemecahan Masalah (Troubleshooting)
 
 ## Pengecek patch
@@ -863,13 +912,12 @@ sudo /Library/Application\ Support/VMware\ Tools/vmware-resolutionSet 1440 900
 ESXi Unlocker tidak menambahkan dukungan resmi CPU AMD. Workaround AMD harus ditangani melalui konfigurasi guest, OpenCore, atau tooling macOS lain di luar proyek ini.
 
 Jika Anda mengedit file VMX secara manual, pastikan tidak ada key duplikat. Key VMX duplikat dapat membuat VM gagal start dan menimbulkan error dictionary/configuration.
-
-```
+````
 
 ## LICENSE
 
 ```text
-MIT License
+# MIT License
 
 Copyright (c) 2011-2023 David Parsons
 Copyright (c) 2024-2026 Harry DS Alsyundawy - Alsyundawy IT Solution
@@ -891,7 +939,6 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
-
 ```
 
 ## check
@@ -916,6 +963,9 @@ SOFTWARE.
 # License     : MIT
 #
 # Changelog   :
+#   2026-07-27 4.0.7c alsyundawy  Add robust unlock.conf parsing check, optimized
+#                                 awk extraction for smcPresent, command path
+#                                 fallback resolution, and python3 PATH fallback.
 #   2026-06-13 4.0.7b alsyundawy  Add reusable helpers, robust SCRIPT_DIR
 #                                 fallback, mandatory python3 executable check,
 #                                 clearer exit status for automation, missing
@@ -962,7 +1012,15 @@ resolve_script() {
 
     case "$0" in
         /*) printf '%s\n' "$0" ;;
-        *)  printf '%s/%s\n' "$(pwd -P)" "$0" ;;
+        */*) printf '%s/%s\n' "$(pwd -P)" "$0" ;;
+        *)
+            _cmd_path=$(command -v "$0" 2>/dev/null || true)
+            if [ -n "$_cmd_path" ]; then
+                printf '%s\n' "$_cmd_path"
+            else
+                printf '%s/%s\n' "$(pwd -P)" "$0"
+            fi
+            ;;
     esac
 }
 
@@ -975,6 +1033,10 @@ detect_python3() {
             return 0
         fi
     done
+    if _py=$(command -v python3 2>/dev/null) && [ -x "$_py" ]; then
+        printf '%s\n' "$_py"
+        return 0
+    fi
     return 1
 }
 
@@ -985,7 +1047,7 @@ PYTHON3=$(detect_python3) || {
     PYTHON3=''
 }
 
-printf 'VMware ESXi Unlocker 4.0.7b\n'
+printf 'VMware ESXi Unlocker 4.0.7c\n'
 printf '===========================\n'
 printf '\nChecking unlocker status...\n'
 
@@ -999,13 +1061,17 @@ fi
 if [ ! -f '/etc/unlock.conf' ]; then
     fail_check 'System has not been patched (unlock.conf missing)'
 else
-    PATCH=$(cat /etc/unlock.conf)
-    printf 'Patch built for ESXi  : %s\n' "$PATCH"
+    PATCH=$(cat /etc/unlock.conf 2>/dev/null || true)
+    if [ -z "$PATCH" ]; then
+        fail_check 'unlock.conf exists but is empty or unreadable'
+    else
+        printf 'Patch built for ESXi  : %s\n' "$PATCH"
 
-    if [ -n "$ESXI" ] && [ "$ESXI" != "$PATCH" ]; then
-        fail_check 'Version mismatch — please relock and unlock to update patches'
-    elif [ -n "$ESXI" ]; then
-        printf '%s\n' "${GRN}ESXi version matches patch record.${RST}"
+        if [ -n "$ESXI" ] && [ "$ESXI" != "$PATCH" ]; then
+            fail_check 'Version mismatch — please relock and unlock to update patches'
+        elif [ -n "$ESXI" ]; then
+            printf '%s\n' "${GRN}ESXi version matches patch record.${RST}"
+        fi
     fi
 fi
 
@@ -1063,7 +1129,7 @@ fi
 
 printf '\nChecking smcPresent status...\n'
 if command -v vim-cmd >/dev/null 2>&1; then
-    _smc=$(vim-cmd hostsvc/hosthardware 2>/dev/null | grep smcPresent | cut -d ',' -f 1 | sed 's/^[[:space:]]*//')
+    _smc=$(vim-cmd hostsvc/hosthardware 2>/dev/null | awk -F',' '/smcPresent/ {gsub(/^[ \t]+/, "", $1); print $1; exit}')
     if [ -n "$_smc" ]; then
         printf '%s\n' "$_smc"
     else
@@ -1080,7 +1146,6 @@ fi
 
 printf '\n%s\n' "${RED}Check completed: one or more required checks failed.${RST}"
 exit 1
-
 ```
 
 ## checksmc
@@ -1094,6 +1159,8 @@ exit 1
 # Copyright (c) 2024-2026 Harry DS Alsyundawy - Alsyundawy IT Solution
 # License: MIT
 # Changelog:
+#   2026-07-27 4.0.7c alsyundawy  Add target file existence check, command path
+#                                 fallback resolution, and python3 PATH fallback.
 #   2026-06-13 4.0.7b alsyundawy  Add PATH hardening, robust SCRIPT_DIR
 #                                 fallback when readlink -f is unavailable,
 #                                 executable python3 validation, and safer
@@ -1116,7 +1183,15 @@ resolve_script() {
 
     case "$0" in
         /*) printf '%s\n' "$0" ;;
-        *)  printf '%s/%s\n' "$(pwd -P)" "$0" ;;
+        */*) printf '%s/%s\n' "$(pwd -P)" "$0" ;;
+        *)
+            _cmd_path=$(command -v "$0" 2>/dev/null || true)
+            if [ -n "$_cmd_path" ]; then
+                printf '%s\n' "$_cmd_path"
+            else
+                printf '%s/%s\n' "$(pwd -P)" "$0"
+            fi
+            ;;
     esac
 }
 
@@ -1129,11 +1204,20 @@ detect_python3() {
             return 0
         fi
     done
+    if _py=$(command -v python3 2>/dev/null) && [ -x "$_py" ]; then
+        printf '%s\n' "$_py"
+        return 0
+    fi
     return 1
 }
 
 if [ -z "${1:-}" ]; then
     printf 'Usage: %s <vmx-filename>\n' "$0" >&2
+    exit 1
+fi
+
+if [ ! -f "$1" ]; then
+    printf 'ERROR: Target file not found or not a regular file: %s\n' "$1" >&2
     exit 1
 fi
 
@@ -1145,7 +1229,6 @@ PYTHON3=$(detect_python3) || {
 }
 
 "$PYTHON3" "$SCRIPT_DIR/patchsmc" check "$1"
-
 ```
 
 ## checkvmkctl
@@ -1159,6 +1242,8 @@ PYTHON3=$(detect_python3) || {
 # Copyright (c) 2024-2026 Harry DS Alsyundawy - Alsyundawy IT Solution
 # License: MIT
 # Changelog:
+#   2026-07-27 4.0.7c alsyundawy  Add target file existence check, command path
+#                                 fallback resolution, and python3 PATH fallback.
 #   2026-06-13 4.0.7b alsyundawy  Add PATH hardening, robust SCRIPT_DIR
 #                                 fallback when readlink -f is unavailable,
 #                                 executable python3 validation, and safer
@@ -1181,7 +1266,15 @@ resolve_script() {
 
     case "$0" in
         /*) printf '%s\n' "$0" ;;
-        *)  printf '%s/%s\n' "$(pwd -P)" "$0" ;;
+        */*) printf '%s/%s\n' "$(pwd -P)" "$0" ;;
+        *)
+            _cmd_path=$(command -v "$0" 2>/dev/null || true)
+            if [ -n "$_cmd_path" ]; then
+                printf '%s\n' "$_cmd_path"
+            else
+                printf '%s/%s\n' "$(pwd -P)" "$0"
+            fi
+            ;;
     esac
 }
 
@@ -1194,11 +1287,20 @@ detect_python3() {
             return 0
         fi
     done
+    if _py=$(command -v python3 2>/dev/null) && [ -x "$_py" ]; then
+        printf '%s\n' "$_py"
+        return 0
+    fi
     return 1
 }
 
 if [ -z "${1:-}" ]; then
     printf 'Usage: %s <libvmkctl-filename>\n' "$0" >&2
+    exit 1
+fi
+
+if [ ! -f "$1" ]; then
+    printf 'ERROR: Target file not found or not a regular file: %s\n' "$1" >&2
     exit 1
 fi
 
@@ -1210,7 +1312,6 @@ PYTHON3=$(detect_python3) || {
 }
 
 "$PYTHON3" "$SCRIPT_DIR/patchvmkctl" check "$1"
-
 ```
 
 ## dumpsmc
@@ -1224,6 +1325,8 @@ PYTHON3=$(detect_python3) || {
 # Copyright (c) 2024-2026 Harry DS Alsyundawy - Alsyundawy IT Solution
 # License: MIT
 # Changelog:
+#   2026-07-27 4.0.7c alsyundawy  Add target file existence check, command path
+#                                 fallback resolution, and python3 PATH fallback.
 #   2026-06-13 4.0.7b alsyundawy  Add PATH hardening, robust SCRIPT_DIR
 #                                 fallback when readlink -f is unavailable,
 #                                 executable python3 validation, and safer
@@ -1246,7 +1349,15 @@ resolve_script() {
 
     case "$0" in
         /*) printf '%s\n' "$0" ;;
-        *)  printf '%s/%s\n' "$(pwd -P)" "$0" ;;
+        */*) printf '%s/%s\n' "$(pwd -P)" "$0" ;;
+        *)
+            _cmd_path=$(command -v "$0" 2>/dev/null || true)
+            if [ -n "$_cmd_path" ]; then
+                printf '%s\n' "$_cmd_path"
+            else
+                printf '%s/%s\n' "$(pwd -P)" "$0"
+            fi
+            ;;
     esac
 }
 
@@ -1259,11 +1370,20 @@ detect_python3() {
             return 0
         fi
     done
+    if _py=$(command -v python3 2>/dev/null) && [ -x "$_py" ]; then
+        printf '%s\n' "$_py"
+        return 0
+    fi
     return 1
 }
 
 if [ -z "${1:-}" ]; then
     printf 'Usage: %s <vmx-filename>\n' "$0" >&2
+    exit 1
+fi
+
+if [ ! -f "$1" ]; then
+    printf 'ERROR: Target file not found or not a regular file: %s\n' "$1" >&2
     exit 1
 fi
 
@@ -1275,7 +1395,6 @@ PYTHON3=$(detect_python3) || {
 }
 
 "$PYTHON3" "$SCRIPT_DIR/patchsmc" dump "$1"
-
 ```
 
 ## patchsmc
@@ -1859,7 +1978,6 @@ if __name__ == '__main__':
     print('=========================================')
     print()
     sys.exit(main())
-
 ```
 
 ## patchvmkctl
@@ -2099,7 +2217,6 @@ if __name__ == '__main__':
     print('============================================')
     print()
     sys.exit(main())
-
 ```
 
 ## relock
@@ -2124,6 +2241,8 @@ if __name__ == '__main__':
 # License     : MIT
 #
 # Changelog   :
+#   2026-07-27 4.0.7c alsyundawy  Add non-interactive prompt protection and
+#                                 standardized script path resolution.
 #   2026-06-13 4.0.7b alsyundawy  Add BootModuleConfig.sh command validation,
 #                                 clearer version banner, and stricter error
 #                                 reporting if apple.v00 removal fails.
@@ -2180,7 +2299,7 @@ fi
 
 command -v BootModuleConfig.sh >/dev/null 2>&1 || die 'BootModuleConfig.sh not found'
 
-printf 'VMware ESXi Unlocker 4.0.7b\n'
+printf 'VMware ESXi Unlocker 4.0.7c\n'
 printf '===========================\n'
 printf '\nRemoving unlocker...\n'
 
@@ -2193,7 +2312,7 @@ else
 fi
 
 printf '\nReboot the ESXi server to complete the relock (y/N)? '
-read -r response
+read -r response 2>/dev/null || response='n'
 case "$response" in
     [yY])
         printf 'Rebooting the ESXi server now...\n'
@@ -2205,7 +2324,6 @@ case "$response" in
 esac
 
 exit 0
-
 ```
 
 ## unlock
@@ -2238,6 +2356,11 @@ exit 0
 # License     : MIT
 #
 # Changelog   :
+#   2026-07-27 4.0.7c alsyundawy  Add trap cleanup handler for temporary staging
+#                                 directories, fallback command path resolution
+#                                 in resolve_script, python3 PATH fallback, non-
+#                                 interactive read prompt protection, and strict
+#                                 chmod error validation for optional binaries.
 #   2026-06-13 4.0.7b alsyundawy  Define ANSI colors before first use. Add
 #                                 command preflight checks, fatal vmware -v
 #                                 guard, numeric disk-space validation, running
@@ -2270,6 +2393,13 @@ GRN='\033[32m'
 YLW='\033[33m'
 RST='\033[0m'
 
+# shellcheck disable=SC2329
+cleanup() {
+    rm -rf ./tmp 2>/dev/null || true
+    rm -f ./apple.tar ./apple.vtar ./apple.vtar.v00 2>/dev/null || true
+}
+trap cleanup EXIT INT TERM HUP
+
 die() {
     printf '%s\n' "${RED}>>> ERROR: $* <<<${RST}" >&2
     exit 1
@@ -2294,7 +2424,15 @@ resolve_script() {
 
     case "$0" in
         /*) printf '%s\n' "$0" ;;
-        *)  printf '%s/%s\n' "$(pwd -P)" "$0" ;;
+        */*) printf '%s/%s\n' "$(pwd -P)" "$0" ;;
+        *)
+            _cmd_path=$(command -v "$0" 2>/dev/null || true)
+            if [ -n "$_cmd_path" ]; then
+                printf '%s\n' "$_cmd_path"
+            else
+                printf '%s/%s\n' "$(pwd -P)" "$0"
+            fi
+            ;;
     esac
 }
 
@@ -2307,6 +2445,10 @@ detect_python3() {
             return 0
         fi
     done
+    if _py=$(command -v python3 2>/dev/null) && [ -x "$_py" ]; then
+        printf '%s\n' "$_py"
+        return 0
+    fi
     return 1
 }
 
@@ -2338,7 +2480,7 @@ if [ $# -eq 1 ]; then
     esac
 fi
 
-printf 'VMware ESXi Unlocker 4.0.7b\n'
+printf 'VMware ESXi Unlocker 4.0.7c\n'
 printf '===========================\n'
 printf 'Compatibility: ESXi 6.7 / 7.x / 8 U3\n'
 printf 'Reference    : DrDonk/unlocker 4.x patch logic; ESXi port is fork-specific\n'
@@ -2416,8 +2558,12 @@ else
 fi
 
 chmod 4755 ./tmp/bin/vmx ./tmp/bin/vmx-debug || die 'Failed to chmod staged vmx binaries writable/setuid'
-[ -f ./tmp/bin/vmx-stats ] && chmod 4755 ./tmp/bin/vmx-stats || true
-[ -f ./tmp/lib64/libvmkctl.so ] && chmod 0755 ./tmp/lib64/libvmkctl.so || true
+if [ -f ./tmp/bin/vmx-stats ]; then
+    chmod 4755 ./tmp/bin/vmx-stats || die 'Failed to chmod staged vmx-stats'
+fi
+if [ -f ./tmp/lib64/libvmkctl.so ]; then
+    chmod 0755 ./tmp/lib64/libvmkctl.so || die 'Failed to chmod staged libvmkctl.so'
+fi
 
 printf '%s\n' "$ESXI_VERSION" > ./tmp/etc/unlock.conf || die 'Failed to write staged unlock.conf'
 
@@ -2443,8 +2589,12 @@ find ./tmp \( -name '*.bak' -o -name '*.sha256' \) -type f -exec rm -f {} \; 2>/
     die 'Failed to purge staged audit files before building apple.v00'
 
 chmod 4555 ./tmp/bin/vmx ./tmp/bin/vmx-debug || die 'Failed to set final vmx permissions'
-[ -f ./tmp/bin/vmx-stats ] && chmod 4555 ./tmp/bin/vmx-stats || true
-[ -f ./tmp/lib64/libvmkctl.so ] && chmod 0555 ./tmp/lib64/libvmkctl.so || true
+if [ -f ./tmp/bin/vmx-stats ]; then
+    chmod 4555 ./tmp/bin/vmx-stats || die 'Failed to set final vmx-stats permissions'
+fi
+if [ -f ./tmp/lib64/libvmkctl.so ]; then
+    chmod 0555 ./tmp/lib64/libvmkctl.so || die 'Failed to set final libvmkctl.so permissions'
+fi
 
 printf '\nBuilding apple.v00 VMTAR file...\n'
 ( cd ./tmp && tar cf ../apple.tar ./* ) || die 'Failed to create apple.tar'
@@ -2465,11 +2615,11 @@ if [ -f '/bootbank/apple.v00' ]; then
 fi
 BootModuleConfig.sh --verbose --add=apple.v00 || die 'BootModuleConfig add failed for apple.v00'
 
-printf '\n%s\n' "${GRN}Unlocker 4.0.7b installed successfully.${RST}"
+printf '\n%s\n' "${GRN}Unlocker 4.0.7c installed successfully.${RST}"
 printf 'ESXi version patched: %s\n' "$ESXI_VERSION"
 
 printf '\nReboot the ESXi server to activate the unlocker (y/N)? '
-read -r response
+read -r response 2>/dev/null || response='n'
 case "$response" in
     [yY])
         printf 'Rebooting the ESXi server now...\n'
@@ -2481,6 +2631,4 @@ case "$response" in
 esac
 
 exit 0
-
 ```
-
