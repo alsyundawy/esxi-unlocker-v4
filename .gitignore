@@ -12,3 +12,4 @@ dist/
 *.vmtar
 *.vgz
 *.v00
+.vscode/settings.json

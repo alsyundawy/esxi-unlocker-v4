@@ -10,12 +10,12 @@ Cek status patch dari folder unlocker:
 ./check
 ```
 
-Pada 4.0.7b, `check` keluar dengan status `0` jika pemeriksaan wajib lulus dan status `1` jika pemeriksaan wajib gagal. Komponen opsional seperti `vmx-stats` dan `libvmkctl.so` hanya menjadi peringatan jika tidak ada, karena memang tidak tersedia pada semua build ESXi.
+Pada 4.0.7d, `check` keluar dengan status `0` jika pemeriksaan wajib lulus dan status `1` jika pemeriksaan wajib gagal. Komponen opsional seperti `vmx-stats` dan `libvmkctl.so` hanya menjadi peringatan jika tidak ada, karena memang tidak tersedia pada semua build ESXi.
 
 Host yang sudah terpatch dengan sehat secara konsep akan terlihat seperti ini; build ESXi, nilai SHA-256, dan output komponen opsional pasti berbeda pada host Anda:
 
 ```text
-VMware ESXi Unlocker 4.0.7b
+VMware ESXi Unlocker 4.0.7d
 ===========================
 
 Checking unlocker status...
@@ -29,7 +29,7 @@ apple.v00 loaded.
 Checking vmx vSMC patch status...
 /bin/vmx contains AppleComputerInc marker.
 ---
-PatchSMC 4.0.7b (ESXi 6.7 / 7.x / 8 U3)
+PatchSMC 4.0.7d (ESXi 6.7 / 7.x / 8 U3)
 ...
 Patch Status: True
 /bin/vmx-debug contains AppleComputerInc marker.
@@ -65,7 +65,7 @@ reboot
 
 ## VM berjalan / Maintenance Mode
 
-Versi 4.0.7b menolak menjalankan `unlock` jika `esxcli vm process list` mendeteksi masih ada VM berjalan. Matikan atau migrasikan semua VM terlebih dahulu.
+Versi 4.0.7d menolak menjalankan `unlock` jika `esxcli vm process list` mendeteksi masih ada VM berjalan. Matikan atau migrasikan semua VM terlebih dahulu.
 
 Skrip juga memberi peringatan jika host tampak belum masuk Maintenance Mode. Maintenance Mode sangat disarankan karena `unlock` menyiapkan ulang dan membuat ulang modul bootbank ESXi.
 
@@ -102,7 +102,7 @@ Jika `patchsmc` melaporkan kondisi partial OSK patch, jangan lanjutkan patch sec
 
 ## vmx-stats hilang atau tidak terpatch
 
-Pada beberapa build ESXi 8.x, `/bin/vmx-stats` tidak ada atau hanya stub 0-byte. Versi 4.0.7b memperlakukan kondisi ini sebagai opsional dan non-fatal.
+Pada beberapa build ESXi 8.x, `/bin/vmx-stats` tidak ada atau hanya stub 0-byte. Versi 4.0.7d memperlakukan kondisi ini sebagai opsional dan non-fatal.
 
 ## libvmkctl.so hilang atau opsional
 

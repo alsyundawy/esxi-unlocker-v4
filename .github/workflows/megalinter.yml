@@ -5,7 +5,7 @@ name: MegaLinter
 
 # Trigger mega-linter at every push. Action will also be visible from Pull
 # Requests to main
-'on': # yamllint disable-line rule:truthy - false positive
+"on": # yamllint disable-line rule:truthy - false positive
   # Comment this line to trigger action only on pull-requests
   # (not recommended if you don't pay for GH Actions)
   push:
@@ -31,6 +31,11 @@ env:
   # or posted in a PR (pull_request)
   APPLY_FIXES_MODE: commit
 
+  # Dynamic flags updated at runtime via GITHUB_ENV; initialized here for static analyzers
+  APPLY_FIXES_IF: "false"
+  APPLY_FIXES_IF_PR: "false"
+  APPLY_FIXES_IF_COMMIT: "false"
+
 concurrency:
   group: ${{ github.ref }}-${{ github.workflow }}
   cancel-in-progress: true
@@ -52,7 +57,7 @@ jobs:
     steps:
       # Git Checkout
       - name: Checkout Code
-        uses: actions/checkout@v7
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           # SECURITY NOTE: Using a Personal Access Token (PAT) is NOT
           # recommended. Open-source projects have been heavily targeted by
@@ -62,8 +67,8 @@ jobs:
           # MegaLinter applies fixes, prefer one of these safer alternatives:
           #   - Manually re-run the workflow from the GitHub Actions tab, or
           #   - Push another commit on the branch to trigger workflows again.
-          # Only define `secrets.PAT` if you fully understand the trade-off.
-          token: ${{ secrets.PAT || secrets.GITHUB_TOKEN }}
+          # Only define a custom PAT secret if you fully understand the trade-off.
+          token: ${{ secrets.GITHUB_TOKEN }}
           persist-credentials: false # Comment this line and uncomment the next one if you use APPLY_FIXES
           # persist-credentials: true # zizmor: ignore[artipacked]
 
@@ -76,7 +81,7 @@ jobs:
 
         # You can override MegaLinter flavor used to have faster performances
         # More info at https://megalinter.io/latest/flavors/
-        uses: oxsecurity/megalinter@v9.6.0
+        uses: oxsecurity/megalinter@ef3e84b8b836d76db562d0f3ed7da61e8fd538bc # v9.6.0
 
         id: ml
 
@@ -112,7 +117,7 @@ jobs:
       # Upload MegaLinter artifacts
       - name: Archive production artifacts
         if: success() || failure()
-        uses: actions/upload-artifact@v7
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: MegaLinter reports
           include-hidden-files: "true"
@@ -151,7 +156,7 @@ jobs:
       # Create pull request if applicable
       # (for now works only on PR from same repository, not from forks)
       - name: Create Pull Request with applied fixes
-        uses: peter-evans/create-pull-request@v8
+        uses: peter-evans/create-pull-request@5f6978faf089d4d20b00c7766989d076bb2fc7f1 # v8.1.1
         id: cpr
         if: env.APPLY_FIXES_IF_PR == 'true'
         with:
@@ -159,7 +164,7 @@ jobs:
           # using `secrets.PAT` is NOT recommended for security reasons.
           # Prefer manually re-running the workflow or pushing another
           # commit on the branch to trigger workflows again.
-          token: ${{ secrets.PAT || secrets.GITHUB_TOKEN }}
+          token: ${{ secrets.GITHUB_TOKEN }}
           commit-message: "[MegaLinter] Apply linters automatic fixes"
           title: "[MegaLinter] Apply linters automatic fixes"
           labels: bot
@@ -180,7 +185,7 @@ jobs:
         run: sudo chown -Rc $UID .git/
 
       - name: Commit and push applied linter fixes
-        uses: stefanzweifel/git-auto-commit-action@v7
+        uses: stefanzweifel/git-auto-commit-action@4a55954c782fc1ea30b9056cd3e7a2b40ca8887d # v7.2.0
         if: env.APPLY_FIXES_IF_COMMIT == 'true'
         with:
           branch: >-

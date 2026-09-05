@@ -10,12 +10,12 @@ Check patch status from the unlocker folder:
 ./check
 ```
 
-In 4.0.7b, `check` exits with status `0` when required checks pass and status `1` when a required check fails. Optional components such as `vmx-stats` and `libvmkctl.so` are warnings when absent because they are not present on all ESXi builds.
+In 4.0.7d, `check` exits with status `0` when required checks pass and status `1` when a required check fails. Optional components such as `vmx-stats` and `libvmkctl.so` are warnings when absent because they are not present on all ESXi builds.
 
 A healthy patched host should look conceptually like this; exact ESXi build, SHA-256 values, and optional component output will differ:
 
 ```text
-VMware ESXi Unlocker 4.0.7b
+VMware ESXi Unlocker 4.0.7d
 ===========================
 
 Checking unlocker status...
@@ -29,7 +29,7 @@ apple.v00 loaded.
 Checking vmx vSMC patch status...
 /bin/vmx contains AppleComputerInc marker.
 ---
-PatchSMC 4.0.7b (ESXi 6.7 / 7.x / 8 U3)
+PatchSMC 4.0.7d (ESXi 6.7 / 7.x / 8 U3)
 ...
 Patch Status: True
 /bin/vmx-debug contains AppleComputerInc marker.
@@ -65,7 +65,7 @@ reboot
 
 ## Running VMs / Maintenance Mode
 
-Version 4.0.7b refuses to run `unlock` when `esxcli vm process list` detects running VMs. Shut down or migrate all VMs first.
+Version 4.0.7d refuses to run `unlock` when `esxcli vm process list` detects running VMs. Shut down or migrate all VMs first.
 
 The script also warns if the host does not appear to be in Maintenance Mode. Maintenance Mode is strongly recommended because `unlock` stages and repacks ESXi bootbank modules.
 
@@ -102,7 +102,7 @@ If `patchsmc` reports a partial OSK patch state, do not continue patching blindl
 
 ## vmx-stats missing or not patched
 
-On some ESXi 8.x builds, `/bin/vmx-stats` is absent or a zero-byte stub. Version 4.0.7b treats this as optional and non-fatal.
+On some ESXi 8.x builds, `/bin/vmx-stats` is absent or a zero-byte stub. Version 4.0.7d treats this as optional and non-fatal.
 
 ## libvmkctl.so missing or optional
 

@@ -49,7 +49,7 @@ Sebelum menjalankan `unlock`:
 - Pastikan tersedia minimal 400 MB ruang kosong di folder/datastore tempat unlocker diekstrak.
 - Siapkan jalur rollback: jalankan `relock`, reboot, lalu jalankan ulang `unlock` setelah update host jika `check` melaporkan mismatch.
 
-Versi 4.0.7b sekarang menolak patch jika masih ada VM berjalan yang terdeteksi melalui `esxcli vm process list`. Skrip juga memberi peringatan jika host tampak belum masuk Maintenance Mode.
+Versi 4.0.7d sekarang menolak patch jika masih ada VM berjalan yang terdeteksi melalui `esxcli vm process list`. Skrip juga memberi peringatan jika host tampak belum masuk Maintenance Mode.
 
 ### Langkah-langkah
 
@@ -74,16 +74,16 @@ Untuk tracing shell verbose:
 
 ## 3. File
 
-| File | Fungsi |
-| --- | --- |
-| `unlock` | Menyiapkan biner ESXi, menerapkan patch, membuat `apple.v00`, dan mendaftarkan modul bootbank. |
-| `relock` | Menghapus `apple.v00` dari konfigurasi bootbank ESXi. |
-| `check` | Mengecek kecocokan versi ESXi, status load `apple.v00`, status patch vmx, dan status opsional `libvmkctl.so`. |
-| `patchsmc` | Tool Python untuk patch/check/dump biner `vmx` ESXi. |
-| `patchvmkctl` | Tool Python untuk patch/check opsional `libvmkctl.so`. |
-| `checksmc` | Wrapper untuk `patchsmc check`. |
-| `checkvmkctl` | Wrapper untuk `patchvmkctl check`. |
-| `dumpsmc` | Wrapper untuk `patchsmc dump`. |
+| File          | Fungsi                                                                                                        |
+| ------------- | ------------------------------------------------------------------------------------------------------------- |
+| `unlock`      | Menyiapkan biner ESXi, menerapkan patch, membuat `apple.v00`, dan mendaftarkan modul bootbank.                |
+| `relock`      | Menghapus `apple.v00` dari konfigurasi bootbank ESXi.                                                         |
+| `check`       | Mengecek kecocokan versi ESXi, status load `apple.v00`, status patch vmx, dan status opsional `libvmkctl.so`. |
+| `patchsmc`    | Tool Python untuk patch/check/dump biner `vmx` ESXi.                                                          |
+| `patchvmkctl` | Tool Python untuk patch/check opsional `libvmkctl.so`.                                                        |
+| `checksmc`    | Wrapper untuk `patchsmc check`.                                                                               |
+| `checkvmkctl` | Wrapper untuk `patchvmkctl check`.                                                                            |
+| `dumpsmc`     | Wrapper untuk `patchsmc dump`.                                                                                |
 
 ## 4. Hak cipta
 

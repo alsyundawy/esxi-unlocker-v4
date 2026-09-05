@@ -22,6 +22,9 @@ Copyright (c) 2024-2026 Harry DS Alsyundawy - Alsyundawy IT Solution
 License: MIT
 
 Changelog:
+    2026-09-05 4.0.7d alsyundawy  Fix implicit string concatenation (SonarLint
+                                  S5799), modernize bytetohex conversion to
+                                  f-strings, and update banner to 4.0.7d.
     2026-06-13 4.0.7b alsyundawy  Return non-zero status for failed patch/check
                                   paths so unlock/check automation can stop
                                   safely. Move .bak creation until after
@@ -88,33 +91,33 @@ import sys
 # Version check
 # ---------------------------------------------------------------------------
 if sys.version_info < (3, 6):
-    sys.stderr.write('You need Python 3.6 or later\n')
+    sys.stderr.write("You need Python 3.6 or later\n")
     sys.exit(1)
 
 # ---------------------------------------------------------------------------
 # Struct constants for header and key access
 # ---------------------------------------------------------------------------
-HDR_PACK   = '=QII'
+HDR_PACK = "=QII"
 HDR_LENGTH = 16
-KEY_PACK   = '=4sB4sB6xQ'
+KEY_PACK = "=4sB4sB6xQ"
 KEY_LENGTH = 24
 DATA_LENGTH = 48
-ROW_LENGTH  = KEY_LENGTH + DATA_LENGTH
+ROW_LENGTH = KEY_LENGTH + DATA_LENGTH
 
 # ---------------------------------------------------------------------------
 # vSMC header magic bytes (private/public key count fields)
 # From Go upstream: smcHeaderV0 / smcHeaderV1
 # ---------------------------------------------------------------------------
-SMC_HEADER_V0 = b'\xF2\x00\x00\x00\xF0\x00\x00\x00'
-SMC_HEADER_V1 = b'\xB4\x01\x00\x00\xB0\x01\x00\x00'
+SMC_HEADER_V0 = b"\xf2\x00\x00\x00\xf0\x00\x00\x00"
+SMC_HEADER_V1 = b"\xb4\x01\x00\x00\xb0\x01\x00\x00"
 
 # ---------------------------------------------------------------------------
 # Key name constants (stored byte-reversed in binary)
 # ---------------------------------------------------------------------------
-KEY_KEY  = b'YEK#'   # #KEY reversed
-LKS_KEY  = b'SKL+'   # +LKS reversed
-OSK0_KEY = b'0KSO'   # OSK0 reversed
-OSK1_KEY = b'1KSO'   # OSK1 reversed
+KEY_KEY = b"YEK#"  # #KEY reversed
+LKS_KEY = b"SKL+"  # +LKS reversed
+OSK0_KEY = b"0KSO"  # OSK0 reversed
+OSK1_KEY = b"1KSO"  # OSK1 reversed
 
 # ---------------------------------------------------------------------------
 # OSK data — raw bytes, matching osk0Data / osk1Data in DrDonk Go smc.go
@@ -122,26 +125,26 @@ OSK1_KEY = b'1KSO'   # OSK1 reversed
 # "ourhardworkbythesewordsguardedpl" (32 bytes)
 # "easedontsteal(c)AppleComputerInc" (32 bytes)
 # ---------------------------------------------------------------------------
-OSK0 = b'ourhardworkbythesewordsguardedpl'
-OSK1 = b'easedontsteal(c)AppleComputerInc'
+OSK0 = b"ourhardworkbythesewordsguardedpl"
+OSK1 = b"easedontsteal(c)AppleComputerInc"
 
 # ---------------------------------------------------------------------------
 # ELF magic for detecting ELF executables (ESXi vmx is ELF)
 # ---------------------------------------------------------------------------
-ELF_MAGIC = b'\x7fELF'
+ELF_MAGIC = b"\x7fELF"
 
 
 # ---------------------------------------------------------------------------
 # Helper utilities
 # ---------------------------------------------------------------------------
 
+
 def _sha256(data: bytes) -> str:
     """Return hex SHA-256 digest of *data* (matches upstream WriteHashes)."""
     return hashlib.sha256(data).hexdigest()
 
 
-def _find_required(data: bytes, pattern: bytes, start: int = 0,
-                   label: str = '') -> int:
+def _find_required(data: bytes, pattern: bytes, start: int = 0, label: str = "") -> int:
     """
     Locate *pattern* in *data* starting at *start*.
 
@@ -153,9 +156,9 @@ def _find_required(data: bytes, pattern: bytes, start: int = 0,
     if pos == -1:
         desc = label or pattern.hex()
         raise RuntimeError(
-            f'Pattern not found: {desc!r} — '
-            f'binary may not be a patchable vmx build '
-            f'(ESXi 8.x layout change or already different format).'
+            f"Pattern not found: {desc!r} — "
+            f"binary may not be a patchable vmx build "
+            f"(ESXi 8.x layout change or already different format)."
         )
     return pos
 
@@ -170,13 +173,14 @@ def _check_file_patchable(name: str) -> bool:
     """
     # Resolve symlinks — os.path.isfile() follows symlinks
     if not os.path.isfile(name):
-        print(f'SKIP: {name} — not a regular file (symlink, missing, or '
-              f'directory). Skipping (expected on ESXi 8.x for vmx-stats).')
+        print(
+            f"SKIP: {name} — not a regular file (symlink, missing, or "
+            f"directory). Skipping (expected on ESXi 8.x for vmx-stats)."
+        )
         return False
     size = os.path.getsize(name)
     if size == 0:
-        print(f'SKIP: {name} — file is 0 bytes. '
-              f'Skipping (ESXi 8.x stub file).')
+        print(f"SKIP: {name} — file is 0 bytes. Skipping (ESXi 8.x stub file).")
         return False
     return True
 
@@ -190,12 +194,12 @@ def _backup_file(name: str) -> str:
 
     Returns the backup filename.
     """
-    backup = name + '.bak'
+    backup = name + ".bak"
     if not os.path.exists(backup):
         shutil.copy2(name, backup)
-        print(f'Backup: {name} -> {backup}')
+        print(f"Backup: {name} -> {backup}")
     else:
-        print(f'Backup already exists: {backup} (skipped overwrite)')
+        print(f"Backup already exists: {backup} (skipped overwrite)")
     return backup
 
 
@@ -203,27 +207,30 @@ def _backup_file(name: str) -> str:
 # Low-level binary I/O helpers
 # ---------------------------------------------------------------------------
 
+
 def bytetohex(data: bytes) -> str:
-    return ''.join('{:02X}'.format(c) for c in data)
+    return "".join(f"{c:02X}" for c in data)
 
 
 def printhdr(offset: int, hdr: tuple) -> None:
-    print(f'File Offset  : 0x{offset:08x}')
-    print(f'Keys Offset  : 0x{hdr[0]:08x}')
-    print(f'Private Key #: 0x{hdr[1]:04x}/{hdr[1]:04d}')
-    print(f'Public Keys #: 0x{hdr[2]:04x}/{hdr[2]:04d}')
+    print(f"File Offset  : 0x{offset:08x}")
+    print(f"Keys Offset  : 0x{hdr[0]:08x}")
+    print(f"Private Key #: 0x{hdr[1]:04x}/{hdr[1]:04d}")
+    print(f"Public Keys #: 0x{hdr[2]:04x}/{hdr[2]:04d}")
     print()
 
 
 def printkey(offset: int, smc_key: tuple, smc_data: bytes) -> None:
-    smc_type = smc_key[2][::-1].replace(b'\x00', b' ').decode('UTF-8')
-    print(f'0x{offset:08x} '
-          f'{smc_key[0][::-1].decode("UTF-8")} '
-          f'{smc_key[1]:03d} '
-          f'{smc_type} '
-          f'0x{smc_key[3]:02x} '
-          f'0x{smc_key[4]:08x} '
-          f'{bytetohex(smc_data)}')
+    smc_type = smc_key[2][::-1].replace(b"\x00", b" ").decode("UTF-8")
+    print(
+        f"0x{offset:08x} "
+        f'{smc_key[0][::-1].decode("UTF-8")} '
+        f"{smc_key[1]:03d} "
+        f"{smc_type} "
+        f"0x{smc_key[3]:02x} "
+        f"0x{smc_key[4]:08x} "
+        f"{bytetohex(smc_data)}"
+    )
 
 
 def gethdr(vmx, offset: int) -> tuple:
@@ -242,10 +249,11 @@ def getkey(vmx, offset: int) -> tuple:
 
 def setkey(vmx, offset: int, smc_key: tuple) -> None:
     vmx.seek(offset)
-    vmx.write(struct.pack(KEY_PACK,
-                          smc_key[0], smc_key[1],
-                          smc_key[2], smc_key[3],
-                          smc_key[4]))
+    vmx.write(
+        struct.pack(
+            KEY_PACK, smc_key[0], smc_key[1], smc_key[2], smc_key[3], smc_key[4]
+        )
+    )
     vmx.flush()
     vmx.seek(offset)
 
@@ -268,6 +276,7 @@ def setdata(vmx, offset: int, smc_data: bytes) -> None:
 # Patch helpers
 # ---------------------------------------------------------------------------
 
+
 def patchosk(vmx, offset: int, ptr: int, data: bytes) -> int:
     """
     Patch a single OSK key entry:
@@ -276,16 +285,16 @@ def patchosk(vmx, offset: int, ptr: int, data: bytes) -> int:
 
     Returns the original OSK handler pointer (needed for ELF RELA patching).
     """
-    smc_key  = getkey(vmx, offset)
+    smc_key = getkey(vmx, offset)
     smc_data = getdata(vmx, offset, smc_key)
-    key      = smc_key[0][::-1].decode('UTF-8')
+    key = smc_key[0][::-1].decode("UTF-8")
     smc_osk_ptr = smc_key[4]
 
-    print(f'{key} Key Before:')
+    print(f"{key} Key Before:")
     printkey(offset, smc_key, smc_data)
 
     # Replace AppleSMCHandleOSK with AppleSMCHandleDefault
-    temp    = list(smc_key)
+    temp = list(smc_key)
     temp[4] = ptr
     smc_key = tuple(temp)
     setkey(vmx, offset, smc_key)
@@ -294,9 +303,9 @@ def patchosk(vmx, offset: int, ptr: int, data: bytes) -> int:
     setdata(vmx, offset, data)
 
     # Verify
-    smc_key  = getkey(vmx, offset)
+    smc_key = getkey(vmx, offset)
     smc_data = getdata(vmx, offset, smc_key)
-    print(f'{key} Key After:')
+    print(f"{key} Key After:")
     printkey(offset, smc_key, smc_data)
 
     return smc_osk_ptr
@@ -305,6 +314,7 @@ def patchosk(vmx, offset: int, ptr: int, data: bytes) -> int:
 # ---------------------------------------------------------------------------
 # Main public functions
 # ---------------------------------------------------------------------------
+
 
 def patchsmc(name: str) -> bool:
     """Patch the vSMC OSK0/OSK1 keys and ELF RELA records in *name*."""
@@ -317,12 +327,12 @@ def patchsmc(name: str) -> bool:
     # Mirrors upstream Go CopyFile os.Chmod() in vmw.go
     orig_mode = stat.S_IMODE(os.stat(name).st_mode)
 
-    with open(name, 'rb+') as vmx:
+    with open(name, "rb+") as vmx:
         vmx_bytes = vmx.read()
 
         # Compute SHA-256 of unpatched file (upstream WriteHashes feature)
         sha_before = _sha256(vmx_bytes)
-        print(f'SHA256 (before): {sha_before}')
+        print(f"SHA256 (before): {sha_before}")
 
         # ------------------------------------------------------------------
         # Fast already-patched check using raw OSK data search
@@ -331,43 +341,53 @@ def patchsmc(name: str) -> bool:
         osk0_present = OSK0 in vmx_bytes
         osk1_present = OSK1 in vmx_bytes
         if osk0_present and osk1_present:
-            print(f'File {name} is already patched')
+            print(f"File {name} is already patched")
             return True
         if osk0_present != osk1_present:
-            print(f'ERROR: File {name} appears partially patched (OSK0/OSK1 mismatch).')
+            print(f"ERROR: File {name} appears partially patched (OSK0/OSK1 mismatch).")
             return False
 
         # ------------------------------------------------------------------
         # Locate vSMC structures (guard against missing patterns on ESXi 8.x)
         # ------------------------------------------------------------------
         try:
-            smc0_header = _find_required(
-                vmx_bytes, SMC_HEADER_V0, label='SMC_HEADER_V0') - 8
-            smc1_header = _find_required(
-                vmx_bytes, SMC_HEADER_V1, label='SMC_HEADER_V1') - 8
+            smc0_header = (
+                _find_required(vmx_bytes, SMC_HEADER_V0, label="SMC_HEADER_V0") - 8
+            )
+            smc1_header = (
+                _find_required(vmx_bytes, SMC_HEADER_V1, label="SMC_HEADER_V1") - 8
+            )
 
             smc0_key = _find_required(
-                vmx_bytes, KEY_KEY, smc0_header, label='#KEY (table 0)')
+                vmx_bytes, KEY_KEY, smc0_header, label="#KEY (table 0)"
+            )
             smc1_key = _find_required(
-                vmx_bytes, KEY_KEY, smc1_header, label='#KEY (table 1)')
+                vmx_bytes, KEY_KEY, smc1_header, label="#KEY (table 1)"
+            )
 
-            smc0_lks  = _find_required(
-                vmx_bytes, LKS_KEY, smc0_key, label='+LKS (table 0)')
-            smc1_lks  = _find_required(
-                vmx_bytes, LKS_KEY, smc1_key, label='+LKS (table 1)')
+            smc0_lks = _find_required(
+                vmx_bytes, LKS_KEY, smc0_key, label="+LKS (table 0)"
+            )
+            smc1_lks = _find_required(
+                vmx_bytes, LKS_KEY, smc1_key, label="+LKS (table 1)"
+            )
 
             smc0_osk0 = _find_required(
-                vmx_bytes, OSK0_KEY, smc0_key, label='OSK0 (table 0)')
+                vmx_bytes, OSK0_KEY, smc0_key, label="OSK0 (table 0)"
+            )
             smc1_osk0 = _find_required(
-                vmx_bytes, OSK0_KEY, smc1_key, label='OSK0 (table 1)')
+                vmx_bytes, OSK0_KEY, smc1_key, label="OSK0 (table 1)"
+            )
             smc0_osk1 = _find_required(
-                vmx_bytes, OSK1_KEY, smc0_key, label='OSK1 (table 0)')
+                vmx_bytes, OSK1_KEY, smc0_key, label="OSK1 (table 0)"
+            )
             smc1_osk1 = _find_required(
-                vmx_bytes, OSK1_KEY, smc1_key, label='OSK1 (table 1)')
+                vmx_bytes, OSK1_KEY, smc1_key, label="OSK1 (table 1)"
+            )
 
         except RuntimeError as exc:
-            print(f'ERROR: {exc}')
-            print(f'File {name} cannot be patched — skipping.')
+            print(f"ERROR: {exc}")
+            print(f"File {name} cannot be patched — skipping.")
             return False
 
         # Backup only after confirming the file is patchable and not already patched.
@@ -380,7 +400,7 @@ def patchsmc(name: str) -> bool:
         hdr = gethdr(vmx, smc0_header)
         printhdr(smc0_header, hdr)
 
-        smc_key         = getkey(vmx, smc0_lks)
+        smc_key = getkey(vmx, smc0_lks)
         smc_default_ptr = smc_key[4]
 
         patchosk(vmx, smc0_osk0, smc_default_ptr, OSK0)
@@ -393,7 +413,7 @@ def patchsmc(name: str) -> bool:
         hdr = gethdr(vmx, smc1_header)
         printhdr(smc1_header, hdr)
 
-        smc_key         = getkey(vmx, smc1_lks)
+        smc_key = getkey(vmx, smc1_lks)
         smc_default_ptr = smc_key[4]
 
         patchosk(vmx, smc1_osk0, smc_default_ptr, OSK0)
@@ -406,18 +426,20 @@ def patchsmc(name: str) -> bool:
         vmx.seek(0)
         magic = vmx.read(4)
         if magic == ELF_MAGIC:
-            print(f'\nModifying ELF RELA records from '
-                  f'0x{smc_osk_ptr:08x} -> 0x{smc_default_ptr:08x}')
+            print(
+                f"\nModifying ELF RELA records from "
+                f"0x{smc_osk_ptr:08x} -> 0x{smc_default_ptr:08x}"
+            )
 
-            packed_old_ptr = struct.pack('=Q', smc_osk_ptr)
-            packed_new_ptr = struct.pack('=Q', smc_default_ptr)
+            packed_old_ptr = struct.pack("=Q", smc_osk_ptr)
+            packed_new_ptr = struct.pack("=Q", smc_default_ptr)
 
             offset = 0
             for _ in range(4):
                 offset = vmx_bytes.find(packed_old_ptr, offset)
                 if offset == -1:
                     break
-                print(f'Relocation modified at: 0x{offset:08x}')
+                print(f"Relocation modified at: 0x{offset:08x}")
                 vmx.seek(offset)
                 vmx.write(packed_new_ptr)
                 offset += 1
@@ -428,28 +450,28 @@ def patchsmc(name: str) -> bool:
         vmx.flush()
         vmx.seek(0)
         sha_after = _sha256(vmx.read())
-        print(f'SHA256 (after) : {sha_after}')
+        print(f"SHA256 (after) : {sha_after}")
 
         # Restore original file permissions after patching
         os.chmod(name, orig_mode)
 
         # Write checksum file (upstream WriteHashes feature)
-        sha_file = name + '.sha256'
-        with open(sha_file, 'w') as sf:
-            sf.write(f'{sha_before}\n{sha_after}\n')
-        print(f'Checksums written: {sha_file}')
+        sha_file = name + ".sha256"
+        with open(sha_file, "w") as sf:
+            sf.write(f"{sha_before}\n{sha_after}\n")
+        print(f"Checksums written: {sha_file}")
 
         del vmx_bytes
         return True
 
 
 def dumpkeys(vmx, offset: int, count: int) -> None:
-    print(f'Table Offset : 0x{offset:08x}')
-    print('Offset     Name Len Type Flag FuncPtr    Data')
-    print('-------    ---- --- ---- ---- -------    ----')
+    print(f"Table Offset : 0x{offset:08x}")
+    print("Offset     Name Len Type Flag FuncPtr    Data")
+    print("-------    ---- --- ---- ---- -------    ----")
 
-    for _ in range(count):   # '_' — loop counter not used
-        smc_key  = getkey(vmx, offset)
+    for _ in range(count):  # '_' — loop counter not used
+        smc_key = getkey(vmx, offset)
         smc_data = getdata(vmx, offset, smc_key)
         printkey(offset, smc_key, smc_data)
         offset += ROW_LENGTH
@@ -461,21 +483,25 @@ def dumpsmc(name: str) -> bool:
     if not _check_file_patchable(name):
         return False
 
-    with open(name, 'rb') as vmx:
+    with open(name, "rb") as vmx:
         vmx_bytes = vmx.read()
 
         try:
-            smc0_header = _find_required(
-                vmx_bytes, SMC_HEADER_V0, label='SMC_HEADER_V0') - 8
-            smc1_header = _find_required(
-                vmx_bytes, SMC_HEADER_V1, label='SMC_HEADER_V1') - 8
+            smc0_header = (
+                _find_required(vmx_bytes, SMC_HEADER_V0, label="SMC_HEADER_V0") - 8
+            )
+            smc1_header = (
+                _find_required(vmx_bytes, SMC_HEADER_V1, label="SMC_HEADER_V1") - 8
+            )
             smc0_key = _find_required(
-                vmx_bytes, KEY_KEY, smc0_header, label='#KEY (table 0)')
+                vmx_bytes, KEY_KEY, smc0_header, label="#KEY (table 0)"
+            )
             smc1_key = _find_required(
-                vmx_bytes, KEY_KEY, smc1_header, label='#KEY (table 1)')
+                vmx_bytes, KEY_KEY, smc1_header, label="#KEY (table 1)"
+            )
         except RuntimeError as exc:
-            print(f'ERROR: {exc}')
-            print(f'File {name} cannot be dumped — skipping.')
+            print(f"ERROR: {exc}")
+            print(f"File {name} cannot be dumped — skipping.")
             return False
 
         del vmx_bytes
@@ -496,14 +522,14 @@ def checksmc(name: str) -> bool:
     """Print the patch status of *name*."""
 
     if not _check_file_patchable(name):
-        print('Patch Status: Unknown (file not patchable)')
+        print("Patch Status: Unknown (file not patchable)")
         return False
 
-    with open(name, 'rb') as vmx:
+    with open(name, "rb") as vmx:
         vmx_bytes = vmx.read()
 
         sha = _sha256(vmx_bytes)
-        print(f'SHA256: {sha}')
+        print(f"SHA256: {sha}")
 
         # Fast check using raw OSK data bytes (mirrors upstream checkPatch)
         osk0_present = OSK0 in vmx_bytes
@@ -515,28 +541,28 @@ def checksmc(name: str) -> bool:
             flag = False
         else:
             # One present, one missing — partial/corrupt state
-            print('Patch Status: Unknown (partial patch detected)')
+            print("Patch Status: Unknown (partial patch detected)")
             return False
 
-        print(f'Patch Status: {flag}')
+        print(f"Patch Status: {flag}")
         return flag
 
 
 def print_usage() -> None:
-    print('Usage:')
-    print(f'  {sys.argv[0]} patch|dump|check <vmx-filename>')
+    print("Usage:")
+    print(f"  {sys.argv[0]} patch|dump|check <vmx-filename>")
     print()
-    print('Commands:')
-    print('  patch - Patch the vSMC table in vmx executable')
-    print('  check - Check the vSMC table patch status')
-    print('  dump  - Dump the vSMC key table to stdout')
+    print("Commands:")
+    print("  patch - Patch the vSMC table in vmx executable")
+    print("  check - Check the vSMC table patch status")
+    print("  dump  - Dump the vSMC key table to stdout")
     print()
-    print('Argument:')
-    print('  <vmx-filename>  ESXi vmx binary: vmx / vmx-debug / vmx-stats')
+    print("Argument:")
+    print("  <vmx-filename>  ESXi vmx binary: vmx / vmx-debug / vmx-stats")
 
 
 def main() -> int:
-    if len(sys.argv) == 2 and sys.argv[1] in ('-h', '--help'):
+    if len(sys.argv) == 2 and sys.argv[1] in ("-h", "--help"):
         print_usage()
         return 0
 
@@ -547,11 +573,11 @@ def main() -> int:
     cmd = sys.argv[1]
     filename = sys.argv[2]
 
-    if cmd == 'patch':
+    if cmd == "patch":
         fn = patchsmc
-    elif cmd == 'check':
+    elif cmd == "check":
         fn = checksmc
-    elif cmd == 'dump':
+    elif cmd == "dump":
         fn = dumpsmc
     else:
         print(f'Error: Unknown command "{cmd}".')
@@ -559,20 +585,20 @@ def main() -> int:
         return 1
 
     if not os.path.exists(filename):
-        print(f'Error: File not found: {filename}')
+        print(f"Error: File not found: {filename}")
         return 1
 
-    print(f'Filename: {filename}')
+    print(f"Filename: {filename}")
     try:
         ok = fn(filename)
     except OSError as exc:
-        print(f'ERROR: OS error while processing {filename}: {exc}')
+        print(f"ERROR: OS error while processing {filename}: {exc}")
         return 1
     return 0 if ok else 1
 
 
-if __name__ == '__main__':
-    print('PatchSMC 4.0.7b (ESXi 6.7 / 7.x / 8 U3)')
-    print('=========================================')
+if __name__ == "__main__":
+    print("PatchSMC 4.0.7d (ESXi 6.7 / 7.x / 8 U3)")
+    print("=========================================")
     print()
     sys.exit(main())

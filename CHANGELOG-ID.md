@@ -2,9 +2,23 @@
 
 Semua tanggal menggunakan format Inggris DD/MM/YY.
 
-## 27/07/26 4.0.7c
+## 4.0.7d - 05/09/26
 
-_alsyundawy (Harry DS Alsyundawy - Alsyundawy IT Solution):_
+_Rilis 4.0.7d oleh alsyundawy (Harry DS Alsyundawy):_
+
+> Tahap pengerasan (hardening) skrip host dan otomatisasi repositori.
+
+- `unlock`: Mengarahkan trap `cleanup` secara ketat ke direktori skrip, mencegah penghapusan file direktori kerja saat dipanggil dari path lain.
+- `patchsmc`: Menggabungkan literal string implisit menjadi format string tunggal untuk menyelesaikan peringatan kualitas kode.
+- `patchsmc`: Memodernisasi logika konversi byte-ke-heksadesimal menggunakan pemformatan langsung.
+- `patchsmc`, `patchvmkctl`: Menyelaraskan banner eksekusi interaktif dan log perubahan docstring ke versi 4.0.7d.
+- `check`, `relock`, `checksmc`, `checkvmkctl`, `dumpsmc`: Memperbarui banner eksekusi, header docblock, dan referensi versi ke 4.0.7d.
+- `megalinter.yml`: Memperkuat langkah checkout dan pull-request pada GitHub Actions agar menggunakan standar `secrets.GITHUB_TOKEN` serta menginisialisasi variabel lingkungan statis dasar.
+- `README.md`, `FULL_CODE_4.0.7d.md`: Memperbarui dokumentasi dan referensi kode lengkap untuk versi 4.0.7d.
+
+## 4.0.7c - 27/07/26
+
+_Catatan rilis 4.0.7c oleh alsyundawy:_
 
 > Tahap perataan keamanan, pengerasan (hardening), dan optimasi performa skrip shell untuk ESXi 6.7 / 7.x / 8 U3.
 
@@ -17,9 +31,9 @@ _alsyundawy (Harry DS Alsyundawy - Alsyundawy IT Solution):_
 - `check`: Mengoptimalkan pipeline query `smcPresent` dengan menggabungkan `grep | cut | sed` menjadi satu perintah `awk` agar eksekusi lebih cepat dan hemat resource.
 - `checksmc`, `checkvmkctl`, `dumpsmc`: Menambahkan validasi file target (`[ -f "$1" ]`) pada skrip wrapper untuk menampilkan pesan error yang jelas sebelum memanggil patcher Python.
 
-## 13/06/26 4.0.7b
+## 4.0.7b - 13/06/26
 
-_alsyundawy (Harry DS Alsyundawy - Alsyundawy IT Solution):_
+_Rilis pemeliharaan oleh alsyundawy (Harry DS Alsyundawy):_
 
 > Tahap hardening final untuk ESXi 6.7 / 7.x / 8 U3 per 13/06/26. Wrapper ESXi
 > tetap bersifat fork-specific; upstream DrDonk/unlocker 4.x hanya digunakan
@@ -47,9 +61,9 @@ _alsyundawy (Harry DS Alsyundawy - Alsyundawy IT Solution):_
 - `TROUBLESHOOTING.md`, `TROUBLESHOOTING-ID.md`: Memperbarui contoh ke 4.0.7b dan mendokumentasikan exit non-zero baru, guard VM berjalan, serta komponen opsional.
 - `LICENSE`: Menambahkan baris copyright modifikasi 2024-2026 tanpa mengubah teks lisensi MIT.
 
-## 10/06/26 4.0.7a
+## 4.0.7a - 10/06/26
 
-_alsyundawy (Harry DS Alsyundawy - Alsyundawy IT Solution):_
+_Pembaruan review patch oleh alsyundawy:_
 
 > Tinjauan kode yang komprehensif terhadap ESXi 6.7 / 7.x / 8 U3 — semua perbaikan
 > berdasarkan analisis kode sumber Go dari DrDonk/unlocker 4.2.8 dan kebutuhan khusus
@@ -84,9 +98,9 @@ _alsyundawy (Harry DS Alsyundawy - Alsyundawy IT Solution):_
 - `check`: Memperbaiki peringatan POSIX sh (ShellCheck) terkait dengan `printf '---\n'` dengan
   memformat string secara eksplisit dan aman yang dimulai dengan tanda hubung: `printf '%s\n' '---'`.
 
-## 10/06/26 4.0.7
+## 4.0.7 - 10/06/26
 
-_alsyundawy (Harry DS Alsyundawy - Alsyundawy IT Solution):_
+_Sinkronisasi upstream oleh alsyundawy:_
 
 > Referensi: DrDonk/unlocker **4.2.8** (14/05/26) — menganalisis biner Linux
 > dan sumber Go untuk menyelaraskan implementasi ESXi Python/Shell dengan logika hulu (upstream).
@@ -114,9 +128,9 @@ _alsyundawy (Harry DS Alsyundawy - Alsyundawy IT Solution):_
 - Semua skrip: Memperbarui string versi menjadi `4.0.7`.
 - Semua skrip: Menambahkan warna ANSI `YLW` (kuning) untuk peringatan non-fatal.
 
-## 10/06/26 4.0.6
+## 4.0.6 - 10/06/26
 
-_alsyundawy (Harry DS Alsyundawy - Alsyundawy IT Solution):_
+_Stabilisasi fork awal oleh alsyundawy:_
 
 - `unlock`: Memperbaiki **bug kritis** — argumen posisi `$1` yang salah ditambahkan
   ke perintah `cp`, `rm`, `vmtar`, `pigz`, dan `mv`, yang menyebabkan semua operasi penyiapan

@@ -1,10 +1,24 @@
-# Changes
+# [4.0.7d] Changes
 
 All dates are UK DD/MM/YY format.
 
-## 27/07/26 4.0.7c
+## 4.0.7d - 05/09/26
 
-_alsyundawy (Harry DS Alsyundawy - Alsyundawy IT Solution):_
+_Release 4.0.7d by alsyundawy (Harry DS Alsyundawy):_
+
+> Hardening pass for host scripts and repository automation.
+
+- `unlock`: Scope `cleanup` trap strictly to the resolved script directory, preventing accidental deletion of working directory files when invoked remotely.
+- `patchsmc`: Merge implicitly concatenated string literals into single format strings to resolve code quality diagnostics.
+- `patchsmc`: Modernize byte-to-hex conversion logic to use direct string formatting.
+- `patchsmc`, `patchvmkctl`: Synchronize interactive execution banners and docstring changelogs to version 4.0.7d.
+- `check`, `relock`, `checksmc`, `checkvmkctl`, `dumpsmc`: Update execution banners, docblock headers, and version references to 4.0.7d.
+- `megalinter.yml`: Harden GitHub Actions checkout and pull-request steps to use standard `secrets.GITHUB_TOKEN` and initialize static baseline environment variables.
+- `README.md`, `FULL_CODE_4.0.7d.md`: Update documentation and single-file reference for version 4.0.7d.
+
+## 4.0.7c - 27/07/26
+
+_Release 4.0.7c notes by alsyundawy:_
 
 > Hardening and performance optimization pass for ESXi 6.7 / 7.x / 8 U3 shell scripts.
 
@@ -17,9 +31,9 @@ _alsyundawy (Harry DS Alsyundawy - Alsyundawy IT Solution):_
 - `check`: Optimize `smcPresent` query pipeline by consolidating `grep | cut | sed` into a single `awk` statement for faster execution and lower resource overhead.
 - `checksmc`, `checkvmkctl`, `dumpsmc`: Add explicit target file validation (`[ -f "$1" ]`) in wrapper scripts to report clean error messages before invoking Python patchers.
 
-## 13/06/26 4.0.7b
+## 4.0.7b - 13/06/26
 
-_alsyundawy (Harry DS Alsyundawy - Alsyundawy IT Solution):_
+_Maintenance release by alsyundawy (Harry DS Alsyundawy):_
 
 > Final hardening pass for ESXi 6.7 / 7.x / 8 U3 as of 13/06/26. The ESXi
 > wrapper remains fork-specific; upstream DrDonk/unlocker 4.x is used only as
@@ -47,9 +61,9 @@ _alsyundawy (Harry DS Alsyundawy - Alsyundawy IT Solution):_
 - `TROUBLESHOOTING.md`, `TROUBLESHOOTING-ID.md`: Update examples to 4.0.7b and document the new non-zero check behaviour, running-VM guard, and optional component handling.
 - `LICENSE`: Add explicit 2024-2026 modification copyright line while preserving the MIT license text.
 
-## 10/06/26 4.0.7a
+## 4.0.7a - 10/06/26
 
-_alsyundawy (Harry DS Alsyundawy - Alsyundawy IT Solution):_
+_Patch review updates by alsyundawy:_
 
 > Comprehensive code review pass against ESXi 6.7 / 7.x / 8 U3 — all fixes
 > based on analysis of DrDonk/unlocker 4.2.8 Go source and ESXi-specific
@@ -84,9 +98,9 @@ _alsyundawy (Harry DS Alsyundawy - Alsyundawy IT Solution):_
 - `check`: Fix POSIX sh warnings (ShellCheck) related to `printf '---\n'` by
   safely explicitly formatting strings starting with dashes: `printf '%s\n' '---'`.
 
-## 10/06/26 4.0.7
+## 4.0.7 - 10/06/26
 
-_alsyundawy (Harry DS Alsyundawy - Alsyundawy IT Solution):_
+_Upstream synchronization by alsyundawy:_
 
 > Reference: DrDonk/unlocker **4.2.8** (14/05/26) — analysed Linux binaries
 > and Go source to align ESXi Python/Shell implementation with upstream logic.
@@ -114,9 +128,9 @@ _alsyundawy (Harry DS Alsyundawy - Alsyundawy IT Solution):_
 - All scripts: Update version string to `4.0.7`.
 - All scripts: Add `YLW` (yellow) ANSI color for non-fatal warnings.
 
-## 10/06/26 4.0.6
+## 4.0.6 - 10/06/26
 
-_alsyundawy (Harry DS Alsyundawy - Alsyundawy IT Solution):_
+_Initial fork stabilization by alsyundawy:_
 
 - `unlock`: Fix **critical bug** — erroneous `$1` positional argument was appended
   to `cp`, `rm`, `vmtar`, `pigz`, and `mv` commands, causing all file staging
@@ -137,7 +151,7 @@ _alsyundawy (Harry DS Alsyundawy - Alsyundawy IT Solution):_
 - `patchvmkctl`: Replace bare `open()` calls with `with` context managers.
 - `patchsmc`: Remove redundant `vmx.close()` calls inside/after `with` blocks.
 - `patchsmc`, `patchvmkctl`: Add module docstrings with copyright and changelog.
-- All scripts: Add docblock headers with usage, copyright, and changelog.
+- All scripts: Add docblock headers with usage and copyright notices.
 - All scripts: Update version string to `4.0.6`.
 - `README.md`: Fix all markdownlint warnings (MD001, MD009, MD012, MD022,
   MD026, MD034). Fix typos: `developemnt`, `implmentation`, `capabiltiites`,
@@ -164,7 +178,7 @@ _drdonk:_
 
 - `check` command correctly reports if system not patched
 - `unlock` command checks for free disk space before patching
-- `unlock`  command checks for previous V3 installation before patching
+- `unlock` command checks for previous V3 installation before patching
 - Fixed error if libvmkctl.so already patched
 - Removed an unused unlocker flag (KPPW/KPST) to match Go version
 - Update all copyright dates to 2023
@@ -190,7 +204,7 @@ _drdonk:_
   process leading to failed patches.
 - Modified VMTAR format from PSIGNED-XZ to GZIP
 - Commands are now required to be run each boot of ESXi to avoid possible "Purple Screens of Death" (PSOD).
-- Ensure vmx files have correct permissions, 4555/-r-sr-xr-x,  in apple.v00 archive
+- Ensure vmx files have correct permissions, 4555/-r-sr-xr-x, in apple.v00 archive
 
 ## 26/01/22 4.0.1
 

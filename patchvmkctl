@@ -21,6 +21,7 @@ Copyright (c) 2024-2026 Harry DS Alsyundawy - Alsyundawy IT Solution
 License: MIT
 
 Changelog:
+    2026-09-05 4.0.7d alsyundawy  Update version banner and docstring changelog to 4.0.7d.
     2026-06-13 4.0.7b alsyundawy  Return meaningful exit status for patch/check
                                   operations. Use S_IMODE() when restoring
                                   file permissions after writing. Keep already
@@ -54,20 +55,21 @@ import stat
 import sys
 
 if sys.version_info < (3, 6):
-    sys.stderr.write('You need Python 3.6 or later\n')
+    sys.stderr.write("You need Python 3.6 or later\n")
     sys.exit(1)
 
 
 # ---------------------------------------------------------------------------
 # Patch constants (matching upstream vmkctl.go)
 # ---------------------------------------------------------------------------
-APPLESMC = b'applesmc'   # 8 bytes — string to replace
-VMKERNEL = b'vmkernel'   # 8 bytes — replacement string
+APPLESMC = b"applesmc"  # 8 bytes — string to replace
+VMKERNEL = b"vmkernel"  # 8 bytes — replacement string
 
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
+
 
 def _sha256(data: bytes) -> str:
     """Return hex SHA-256 digest of *data*."""
@@ -77,28 +79,29 @@ def _sha256(data: bytes) -> str:
 def _check_file_patchable(name: str) -> bool:
     """Return True if *name* is a non-empty regular file."""
     if not os.path.isfile(name):
-        print(f'SKIP: {name} — not a regular file. Skipping.')
+        print(f"SKIP: {name} — not a regular file. Skipping.")
         return False
     if os.path.getsize(name) == 0:
-        print(f'SKIP: {name} — file is 0 bytes. Skipping.')
+        print(f"SKIP: {name} — file is 0 bytes. Skipping.")
         return False
     return True
 
 
 def _backup_file(name: str) -> str:
     """Create *name*.bak backup if it does not already exist."""
-    backup = name + '.bak'
+    backup = name + ".bak"
     if not os.path.exists(backup):
         shutil.copy2(name, backup)
-        print(f'Backup: {name} -> {backup}')
+        print(f"Backup: {name} -> {backup}")
     else:
-        print(f'Backup already exists: {backup} (skipped overwrite)')
+        print(f"Backup already exists: {backup} (skipped overwrite)")
     return backup
 
 
 # ---------------------------------------------------------------------------
 # Main functions
 # ---------------------------------------------------------------------------
+
 
 def checkvmkctl(name: str) -> bool:
     """
@@ -109,21 +112,23 @@ def checkvmkctl(name: str) -> bool:
     if not _check_file_patchable(name):
         return False
 
-    with open(name, 'rb') as fh:
+    with open(name, "rb") as fh:
         vmkctl = fh.read()
 
     sha = _sha256(vmkctl)
-    print(f'SHA256: {sha}')
+    print(f"SHA256: {sha}")
 
     patched = APPLESMC not in vmkctl
-    print(f'Patch Status: {patched}')
+    print(f"Patch Status: {patched}")
     if patched:
-        print('Note: applesmc string is absent; file is already patched or this ESXi build does not require vmkctl patching.')
+        print(
+            "Note: applesmc string is absent; file is already patched or this ESXi build does not require vmkctl patching."
+        )
     return patched
 
 
 def patchvmkctl(name: str) -> bool:
-    """
+    r"""
     Patch libvmkctl.so by replacing 'applesmc' with 'vmkernel'.
 
     Mirrors upstream PatchVMKCTL() in vmkctl.go:
@@ -139,62 +144,64 @@ def patchvmkctl(name: str) -> bool:
     # Capture original permissions before any write operation
     orig_mode = stat.S_IMODE(os.stat(name).st_mode)
 
-    with open(name, 'rb') as fh:
+    with open(name, "rb") as fh:
         vmkctl = fh.read()
 
     sha_before = _sha256(vmkctl)
-    print(f'SHA256 (before): {sha_before}')
+    print(f"SHA256 (before): {sha_before}")
 
     offset = vmkctl.find(APPLESMC)
     if offset == -1:
-        print('applesmc string not found — file may already be patched '
-              'or is not a supported libvmkctl.so.')
-        print(f'Patch Status: {APPLESMC not in vmkctl}')
+        print(
+            "applesmc string not found — file may already be patched "
+            "or is not a supported libvmkctl.so."
+        )
+        print(f"Patch Status: {APPLESMC not in vmkctl}")
         return True
 
-    before = vmkctl[offset:offset + 8].decode('ascii', errors='replace')
-    print(f'Patching {before} -> {VMKERNEL.decode()}')
+    before = vmkctl[offset : offset + 8].decode("ascii", errors="replace")
+    print(f"Patching {before} -> {VMKERNEL.decode()}")
 
     # Backup before writing (only if file is actually going to be patched)
     _backup_file(name)
 
     # Patch in-memory using bytearray (safe, no seek needed)
     vmkctl_patched = bytearray(vmkctl)
-    vmkctl_patched[offset:offset + 8] = VMKERNEL
+    vmkctl_patched[offset : offset + 8] = VMKERNEL
 
-    with open(name, 'wb') as fh:
+    with open(name, "wb") as fh:
         fh.write(vmkctl_patched)
 
     # Restore original file permissions (open 'wb' may reset on some FS)
     os.chmod(name, orig_mode)
 
     sha_after = _sha256(bytes(vmkctl_patched))
-    print(f'SHA256 (after) : {sha_after}')
+    print(f"SHA256 (after) : {sha_after}")
 
     # Write checksum file
-    sha_file = name + '.sha256'
-    with open(sha_file, 'w') as sf:
-        sf.write(f'{sha_before}\n{sha_after}\n')
-    print(f'Checksums written: {sha_file}')
+    sha_file = name + ".sha256"
+    with open(sha_file, "w") as sf:
+        sf.write(f"{sha_before}\n{sha_after}\n")
+    print(f"Checksums written: {sha_file}")
 
-    print('smcPresent patched successfully.')
+    print("smcPresent patched successfully.")
     return True
 
 
 def print_usage() -> None:
-    print('Usage:')
-    print(f'  {sys.argv[0]} patch|check <libvmkctl-filename>')
+    print("Usage:")
+    print(f"  {sys.argv[0]} patch|check <libvmkctl-filename>")
     print()
-    print('Commands:')
-    print('  patch - Patch smcPresent string in libvmkctl.so')
-    print('  check - Check patch status of libvmkctl.so')
+    print("Commands:")
+    print("  patch - Patch smcPresent string in libvmkctl.so")
+    print("  check - Check patch status of libvmkctl.so")
     print()
-    print('Argument:')
-    print('  <libvmkctl-filename>  Path to libvmkctl.so')
+    print("Argument:")
+    print("  <libvmkctl-filename>  Path to libvmkctl.so")
 
 
 def main() -> int:
-    if len(sys.argv) == 2 and sys.argv[1] in ('-h', '--help'):
+    if len(sys.argv) == 2 and sys.argv[1] in ("-h", "--help"):
         print_usage()
         return 0
 
@@ -205,9 +212,9 @@ def main() -> int:
     cmd = sys.argv[1]
     filename = sys.argv[2]
 
-    if cmd == 'check':
+    if cmd == "check":
         fn = checkvmkctl
-    elif cmd == 'patch':
+    elif cmd == "patch":
         fn = patchvmkctl
     else:
         print(f'Error: Unknown command "{cmd}".')
@@ -215,20 +222,20 @@ def main() -> int:
         return 1
 
     if not os.path.exists(filename):
-        print(f'Error: File not found: {filename}')
+        print(f"Error: File not found: {filename}")
         return 1
 
-    print(f'Filename: {filename}')
+    print(f"Filename: {filename}")
     try:
         ok = fn(filename)
     except OSError as exc:
-        print(f'ERROR: OS error while processing {filename}: {exc}')
+        print(f"ERROR: OS error while processing {filename}: {exc}")
         return 1
     return 0 if ok else 1
 
 
-if __name__ == '__main__':
-    print('PatchVMKCTL 4.0.7b (ESXi 6.7 / 7.x / 8 U3)')
-    print('============================================')
+if __name__ == "__main__":
+    print("PatchVMKCTL 4.0.7d (ESXi 6.7 / 7.x / 8 U3)")
+    print("============================================")
     print()
     sys.exit(main())

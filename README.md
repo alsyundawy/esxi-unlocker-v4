@@ -1,3 +1,5 @@
+<!-- dwg:ignore structure -->
+
 # macOS Unlocker V4 for VMware ESXi
 
 ## IMPORTANT: Security and licensing notice
@@ -49,7 +51,7 @@ Before running `unlock`:
 - Ensure at least 400 MB free space in the folder/datastore where the unlocker is extracted.
 - Keep a rollback path: run `relock`, reboot, and re-run `unlock` after host updates if `check` reports a mismatch.
 
-Version 4.0.7b now refuses to patch if running VMs are detected through `esxcli vm process list`. It also warns if the host does not appear to be in Maintenance Mode.
+Version 4.0.7d refuses to patch if running VMs are detected through `esxcli vm process list`. It also warns if the host does not appear to be in Maintenance Mode.
 
 ### Steps
 
@@ -74,16 +76,16 @@ For verbose shell tracing:
 
 ## 3. Files
 
-| File | Purpose |
-| --- | --- |
-| `unlock` | Stages ESXi binaries, applies patches, builds `apple.v00`, and registers the bootbank module. |
-| `relock` | Removes `apple.v00` from ESXi bootbank configuration. |
-| `check` | Checks ESXi version match, `apple.v00` load status, vmx patch state, and optional `libvmkctl.so` status. |
-| `patchsmc` | Python patch/check/dump tool for ESXi `vmx` binaries. |
-| `patchvmkctl` | Python patch/check tool for optional `libvmkctl.so`. |
-| `checksmc` | Wrapper around `patchsmc check`. |
-| `checkvmkctl` | Wrapper around `patchvmkctl check`. |
-| `dumpsmc` | Wrapper around `patchsmc dump`. |
+| File          | Purpose                                                                                                  |
+| ------------- | -------------------------------------------------------------------------------------------------------- |
+| `unlock`      | Stages ESXi binaries, applies patches, builds `apple.v00`, and registers the bootbank module.            |
+| `relock`      | Removes `apple.v00` from ESXi bootbank configuration.                                                    |
+| `check`       | Checks ESXi version match, `apple.v00` load status, vmx patch state, and optional `libvmkctl.so` status. |
+| `patchsmc`    | Python patch/check/dump tool for ESXi `vmx` binaries.                                                    |
+| `patchvmkctl` | Python patch/check tool for optional `libvmkctl.so`.                                                     |
+| `checksmc`    | Wrapper around `patchsmc check`.                                                                         |
+| `checkvmkctl` | Wrapper around `patchvmkctl check`.                                                                      |
+| `dumpsmc`     | Wrapper around `patchsmc dump`.                                                                          |
 
 ## 4. Copyright
 
@@ -103,3 +105,5 @@ Thanks to lucaskamp and other testers who helped validate Unlocker version 4 beh
 ## 6. Changelog
 
 See [CHANGELOG.md](CHANGELOG.md) for the complete version history.
+
+<!-- dwg:end-ignore -->

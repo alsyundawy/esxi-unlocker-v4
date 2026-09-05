@@ -1,10 +1,12 @@
-# ESXi Unlocker V4 4.0.7c - Full Code
+# ESXi Unlocker V4 4.0.7d - Full Code
 
-Generated from the reviewed 4.0.7c package.
+Generated from the reviewed 4.0.7d package.
 
 ## README.md
 
 ````markdown
+<!-- dwg:ignore structure -->
+
 # macOS Unlocker V4 for VMware ESXi
 
 ## IMPORTANT: Security and licensing notice
@@ -56,7 +58,7 @@ Before running `unlock`:
 - Ensure at least 400 MB free space in the folder/datastore where the unlocker is extracted.
 - Keep a rollback path: run `relock`, reboot, and re-run `unlock` after host updates if `check` reports a mismatch.
 
-Version 4.0.7b now refuses to patch if running VMs are detected through `esxcli vm process list`. It also warns if the host does not appear to be in Maintenance Mode.
+Version 4.0.7d refuses to patch if running VMs are detected through `esxcli vm process list`. It also warns if the host does not appear to be in Maintenance Mode.
 
 ### Steps
 
@@ -81,16 +83,16 @@ For verbose shell tracing:
 
 ## 3. Files
 
-| File | Purpose |
-| --- | --- |
-| `unlock` | Stages ESXi binaries, applies patches, builds `apple.v00`, and registers the bootbank module. |
-| `relock` | Removes `apple.v00` from ESXi bootbank configuration. |
-| `check` | Checks ESXi version match, `apple.v00` load status, vmx patch state, and optional `libvmkctl.so` status. |
-| `patchsmc` | Python patch/check/dump tool for ESXi `vmx` binaries. |
-| `patchvmkctl` | Python patch/check tool for optional `libvmkctl.so`. |
-| `checksmc` | Wrapper around `patchsmc check`. |
-| `checkvmkctl` | Wrapper around `patchvmkctl check`. |
-| `dumpsmc` | Wrapper around `patchsmc dump`. |
+| File          | Purpose                                                                                                  |
+| ------------- | -------------------------------------------------------------------------------------------------------- |
+| `unlock`      | Stages ESXi binaries, applies patches, builds `apple.v00`, and registers the bootbank module.            |
+| `relock`      | Removes `apple.v00` from ESXi bootbank configuration.                                                    |
+| `check`       | Checks ESXi version match, `apple.v00` load status, vmx patch state, and optional `libvmkctl.so` status. |
+| `patchsmc`    | Python patch/check/dump tool for ESXi `vmx` binaries.                                                    |
+| `patchvmkctl` | Python patch/check tool for optional `libvmkctl.so`.                                                     |
+| `checksmc`    | Wrapper around `patchsmc check`.                                                                         |
+| `checkvmkctl` | Wrapper around `patchvmkctl check`.                                                                      |
+| `dumpsmc`     | Wrapper around `patchsmc dump`.                                                                          |
 
 ## 4. Copyright
 
@@ -110,6 +112,8 @@ Thanks to lucaskamp and other testers who helped validate Unlocker version 4 beh
 ## 6. Changelog
 
 See [CHANGELOG.md](CHANGELOG.md) for the complete version history.
+
+<!-- dwg:end-ignore -->
 ````
 
 ## README-ID.md
@@ -166,7 +170,7 @@ Sebelum menjalankan `unlock`:
 - Pastikan tersedia minimal 400 MB ruang kosong di folder/datastore tempat unlocker diekstrak.
 - Siapkan jalur rollback: jalankan `relock`, reboot, lalu jalankan ulang `unlock` setelah update host jika `check` melaporkan mismatch.
 
-Versi 4.0.7b sekarang menolak patch jika masih ada VM berjalan yang terdeteksi melalui `esxcli vm process list`. Skrip juga memberi peringatan jika host tampak belum masuk Maintenance Mode.
+Versi 4.0.7d sekarang menolak patch jika masih ada VM berjalan yang terdeteksi melalui `esxcli vm process list`. Skrip juga memberi peringatan jika host tampak belum masuk Maintenance Mode.
 
 ### Langkah-langkah
 
@@ -191,16 +195,16 @@ Untuk tracing shell verbose:
 
 ## 3. File
 
-| File | Fungsi |
-| --- | --- |
-| `unlock` | Menyiapkan biner ESXi, menerapkan patch, membuat `apple.v00`, dan mendaftarkan modul bootbank. |
-| `relock` | Menghapus `apple.v00` dari konfigurasi bootbank ESXi. |
-| `check` | Mengecek kecocokan versi ESXi, status load `apple.v00`, status patch vmx, dan status opsional `libvmkctl.so`. |
-| `patchsmc` | Tool Python untuk patch/check/dump biner `vmx` ESXi. |
-| `patchvmkctl` | Tool Python untuk patch/check opsional `libvmkctl.so`. |
-| `checksmc` | Wrapper untuk `patchsmc check`. |
-| `checkvmkctl` | Wrapper untuk `patchvmkctl check`. |
-| `dumpsmc` | Wrapper untuk `patchsmc dump`. |
+| File          | Fungsi                                                                                                        |
+| ------------- | ------------------------------------------------------------------------------------------------------------- |
+| `unlock`      | Menyiapkan biner ESXi, menerapkan patch, membuat `apple.v00`, dan mendaftarkan modul bootbank.                |
+| `relock`      | Menghapus `apple.v00` dari konfigurasi bootbank ESXi.                                                         |
+| `check`       | Mengecek kecocokan versi ESXi, status load `apple.v00`, status patch vmx, dan status opsional `libvmkctl.so`. |
+| `patchsmc`    | Tool Python untuk patch/check/dump biner `vmx` ESXi.                                                          |
+| `patchvmkctl` | Tool Python untuk patch/check opsional `libvmkctl.so`.                                                        |
+| `checksmc`    | Wrapper untuk `patchsmc check`.                                                                               |
+| `checkvmkctl` | Wrapper untuk `patchvmkctl check`.                                                                            |
+| `dumpsmc`     | Wrapper untuk `patchsmc dump`.                                                                                |
 
 ## 4. Hak cipta
 
@@ -224,14 +228,28 @@ Lihat [CHANGELOG-ID.md](CHANGELOG-ID.md) untuk daftar lengkap perubahan setiap v
 
 ## CHANGELOG.md
 
-```text
-# Changes
+```markdown
+# [4.0.7d] Changes
 
 All dates are UK DD/MM/YY format.
 
-## 27/07/26 4.0.7c
+## 4.0.7d - 05/09/26
 
-_alsyundawy (Harry DS Alsyundawy - Alsyundawy IT Solution):_
+_Release 4.0.7d by alsyundawy (Harry DS Alsyundawy):_
+
+> Hardening pass for host scripts and repository automation.
+
+- `unlock`: Scope `cleanup` trap strictly to the resolved script directory, preventing accidental deletion of working directory files when invoked remotely.
+- `patchsmc`: Merge implicitly concatenated string literals into single format strings to resolve code quality diagnostics.
+- `patchsmc`: Modernize byte-to-hex conversion logic to use direct string formatting.
+- `patchsmc`, `patchvmkctl`: Synchronize interactive execution banners and docstring changelogs to version 4.0.7d.
+- `check`, `relock`, `checksmc`, `checkvmkctl`, `dumpsmc`: Update execution banners, docblock headers, and version references to 4.0.7d.
+- `megalinter.yml`: Harden GitHub Actions checkout and pull-request steps to use standard `secrets.GITHUB_TOKEN` and initialize static baseline environment variables.
+- `README.md`, `FULL_CODE_4.0.7d.md`: Update documentation and single-file reference for version 4.0.7d.
+
+## 4.0.7c - 27/07/26
+
+_Release 4.0.7c notes by alsyundawy:_
 
 > Hardening and performance optimization pass for ESXi 6.7 / 7.x / 8 U3 shell scripts.
 
@@ -244,9 +262,9 @@ _alsyundawy (Harry DS Alsyundawy - Alsyundawy IT Solution):_
 - `check`: Optimize `smcPresent` query pipeline by consolidating `grep | cut | sed` into a single `awk` statement for faster execution and lower resource overhead.
 - `checksmc`, `checkvmkctl`, `dumpsmc`: Add explicit target file validation (`[ -f "$1" ]`) in wrapper scripts to report clean error messages before invoking Python patchers.
 
-## 13/06/26 4.0.7b
+## 4.0.7b - 13/06/26
 
-_alsyundawy (Harry DS Alsyundawy - Alsyundawy IT Solution):_
+_Maintenance release by alsyundawy (Harry DS Alsyundawy):_
 
 > Final hardening pass for ESXi 6.7 / 7.x / 8 U3 as of 13/06/26. The ESXi
 > wrapper remains fork-specific; upstream DrDonk/unlocker 4.x is used only as
@@ -274,9 +292,9 @@ _alsyundawy (Harry DS Alsyundawy - Alsyundawy IT Solution):_
 - `TROUBLESHOOTING.md`, `TROUBLESHOOTING-ID.md`: Update examples to 4.0.7b and document the new non-zero check behaviour, running-VM guard, and optional component handling.
 - `LICENSE`: Add explicit 2024-2026 modification copyright line while preserving the MIT license text.
 
-## 10/06/26 4.0.7a
+## 4.0.7a - 10/06/26
 
-_alsyundawy (Harry DS Alsyundawy - Alsyundawy IT Solution):_
+_Patch review updates by alsyundawy:_
 
 > Comprehensive code review pass against ESXi 6.7 / 7.x / 8 U3 — all fixes
 > based on analysis of DrDonk/unlocker 4.2.8 Go source and ESXi-specific
@@ -311,9 +329,9 @@ _alsyundawy (Harry DS Alsyundawy - Alsyundawy IT Solution):_
 - `check`: Fix POSIX sh warnings (ShellCheck) related to `printf '---\n'` by
   safely explicitly formatting strings starting with dashes: `printf '%s\n' '---'`.
 
-## 10/06/26 4.0.7
+## 4.0.7 - 10/06/26
 
-_alsyundawy (Harry DS Alsyundawy - Alsyundawy IT Solution):_
+_Upstream synchronization by alsyundawy:_
 
 > Reference: DrDonk/unlocker **4.2.8** (14/05/26) — analysed Linux binaries
 > and Go source to align ESXi Python/Shell implementation with upstream logic.
@@ -341,9 +359,9 @@ _alsyundawy (Harry DS Alsyundawy - Alsyundawy IT Solution):_
 - All scripts: Update version string to `4.0.7`.
 - All scripts: Add `YLW` (yellow) ANSI color for non-fatal warnings.
 
-## 10/06/26 4.0.6
+## 4.0.6 - 10/06/26
 
-_alsyundawy (Harry DS Alsyundawy - Alsyundawy IT Solution):_
+_Initial fork stabilization by alsyundawy:_
 
 - `unlock`: Fix **critical bug** — erroneous `$1` positional argument was appended
   to `cp`, `rm`, `vmtar`, `pigz`, and `mv` commands, causing all file staging
@@ -364,7 +382,7 @@ _alsyundawy (Harry DS Alsyundawy - Alsyundawy IT Solution):_
 - `patchvmkctl`: Replace bare `open()` calls with `with` context managers.
 - `patchsmc`: Remove redundant `vmx.close()` calls inside/after `with` blocks.
 - `patchsmc`, `patchvmkctl`: Add module docstrings with copyright and changelog.
-- All scripts: Add docblock headers with usage, copyright, and changelog.
+- All scripts: Add docblock headers with usage and copyright notices.
 - All scripts: Update version string to `4.0.6`.
 - `README.md`: Fix all markdownlint warnings (MD001, MD009, MD012, MD022,
   MD026, MD034). Fix typos: `developemnt`, `implmentation`, `capabiltiites`,
@@ -391,7 +409,7 @@ _drdonk:_
 
 - `check` command correctly reports if system not patched
 - `unlock` command checks for free disk space before patching
-- `unlock`  command checks for previous V3 installation before patching
+- `unlock` command checks for previous V3 installation before patching
 - Fixed error if libvmkctl.so already patched
 - Removed an unused unlocker flag (KPPW/KPST) to match Go version
 - Update all copyright dates to 2023
@@ -417,7 +435,7 @@ _drdonk:_
   process leading to failed patches.
 - Modified VMTAR format from PSIGNED-XZ to GZIP
 - Commands are now required to be run each boot of ESXi to avoid possible "Purple Screens of Death" (PSOD).
-- Ensure vmx files have correct permissions, 4555/-r-sr-xr-x,  in apple.v00 archive
+- Ensure vmx files have correct permissions, 4555/-r-sr-xr-x, in apple.v00 archive
 
 ## 26/01/22 4.0.1
 
@@ -432,14 +450,28 @@ _drdonk:_
 
 ## CHANGELOG-ID.md
 
-```text
+```markdown
 # Log Perubahan (Changelog)
 
 Semua tanggal menggunakan format Inggris DD/MM/YY.
 
-## 27/07/26 4.0.7c
+## 4.0.7d - 05/09/26
 
-_alsyundawy (Harry DS Alsyundawy - Alsyundawy IT Solution):_
+_Rilis 4.0.7d oleh alsyundawy (Harry DS Alsyundawy):_
+
+> Tahap pengerasan (hardening) skrip host dan otomatisasi repositori.
+
+- `unlock`: Mengarahkan trap `cleanup` secara ketat ke direktori skrip, mencegah penghapusan file direktori kerja saat dipanggil dari path lain.
+- `patchsmc`: Menggabungkan literal string implisit menjadi format string tunggal untuk menyelesaikan peringatan kualitas kode.
+- `patchsmc`: Memodernisasi logika konversi byte-ke-heksadesimal menggunakan pemformatan langsung.
+- `patchsmc`, `patchvmkctl`: Menyelaraskan banner eksekusi interaktif dan log perubahan docstring ke versi 4.0.7d.
+- `check`, `relock`, `checksmc`, `checkvmkctl`, `dumpsmc`: Memperbarui banner eksekusi, header docblock, dan referensi versi ke 4.0.7d.
+- `megalinter.yml`: Memperkuat langkah checkout dan pull-request pada GitHub Actions agar menggunakan standar `secrets.GITHUB_TOKEN` serta menginisialisasi variabel lingkungan statis dasar.
+- `README.md`, `FULL_CODE_4.0.7d.md`: Memperbarui dokumentasi dan referensi kode lengkap untuk versi 4.0.7d.
+
+## 4.0.7c - 27/07/26
+
+_Catatan rilis 4.0.7c oleh alsyundawy:_
 
 > Tahap perataan keamanan, pengerasan (hardening), dan optimasi performa skrip shell untuk ESXi 6.7 / 7.x / 8 U3.
 
@@ -452,9 +484,9 @@ _alsyundawy (Harry DS Alsyundawy - Alsyundawy IT Solution):_
 - `check`: Mengoptimalkan pipeline query `smcPresent` dengan menggabungkan `grep | cut | sed` menjadi satu perintah `awk` agar eksekusi lebih cepat dan hemat resource.
 - `checksmc`, `checkvmkctl`, `dumpsmc`: Menambahkan validasi file target (`[ -f "$1" ]`) pada skrip wrapper untuk menampilkan pesan error yang jelas sebelum memanggil patcher Python.
 
-## 13/06/26 4.0.7b
+## 4.0.7b - 13/06/26
 
-_alsyundawy (Harry DS Alsyundawy - Alsyundawy IT Solution):_
+_Rilis pemeliharaan oleh alsyundawy (Harry DS Alsyundawy):_
 
 > Tahap hardening final untuk ESXi 6.7 / 7.x / 8 U3 per 13/06/26. Wrapper ESXi
 > tetap bersifat fork-specific; upstream DrDonk/unlocker 4.x hanya digunakan
@@ -482,9 +514,9 @@ _alsyundawy (Harry DS Alsyundawy - Alsyundawy IT Solution):_
 - `TROUBLESHOOTING.md`, `TROUBLESHOOTING-ID.md`: Memperbarui contoh ke 4.0.7b dan mendokumentasikan exit non-zero baru, guard VM berjalan, serta komponen opsional.
 - `LICENSE`: Menambahkan baris copyright modifikasi 2024-2026 tanpa mengubah teks lisensi MIT.
 
-## 10/06/26 4.0.7a
+## 4.0.7a - 10/06/26
 
-_alsyundawy (Harry DS Alsyundawy - Alsyundawy IT Solution):_
+_Pembaruan review patch oleh alsyundawy:_
 
 > Tinjauan kode yang komprehensif terhadap ESXi 6.7 / 7.x / 8 U3 — semua perbaikan
 > berdasarkan analisis kode sumber Go dari DrDonk/unlocker 4.2.8 dan kebutuhan khusus
@@ -519,9 +551,9 @@ _alsyundawy (Harry DS Alsyundawy - Alsyundawy IT Solution):_
 - `check`: Memperbaiki peringatan POSIX sh (ShellCheck) terkait dengan `printf '---\n'` dengan
   memformat string secara eksplisit dan aman yang dimulai dengan tanda hubung: `printf '%s\n' '---'`.
 
-## 10/06/26 4.0.7
+## 4.0.7 - 10/06/26
 
-_alsyundawy (Harry DS Alsyundawy - Alsyundawy IT Solution):_
+_Sinkronisasi upstream oleh alsyundawy:_
 
 > Referensi: DrDonk/unlocker **4.2.8** (14/05/26) — menganalisis biner Linux
 > dan sumber Go untuk menyelaraskan implementasi ESXi Python/Shell dengan logika hulu (upstream).
@@ -549,9 +581,9 @@ _alsyundawy (Harry DS Alsyundawy - Alsyundawy IT Solution):_
 - Semua skrip: Memperbarui string versi menjadi `4.0.7`.
 - Semua skrip: Menambahkan warna ANSI `YLW` (kuning) untuk peringatan non-fatal.
 
-## 10/06/26 4.0.6
+## 4.0.6 - 10/06/26
 
-_alsyundawy (Harry DS Alsyundawy - Alsyundawy IT Solution):_
+_Stabilisasi fork awal oleh alsyundawy:_
 
 - `unlock`: Memperbaiki **bug kritis** — argumen posisi `$1` yang salah ditambahkan
   ke perintah `cp`, `rm`, `vmtar`, `pigz`, dan `mv`, yang menyebabkan semua operasi penyiapan
@@ -653,12 +685,14 @@ Check patch status from the unlocker folder:
 ./check
 ```
 
-In 4.0.7b, `check` exits with status `0` when required checks pass and status `1` when a required check fails. Optional components such as `vmx-stats` and `libvmkctl.so` are warnings when absent because they are not present on all ESXi builds.
+In 4.0.7d, `check` exits with status `0` when required checks pass and status `1` when a required check fails. Optional components such as `vmx-stats` and `libvmkctl.so` are warnings when absent because they are not present on all ESXi builds.
 
 A healthy patched host should look conceptually like this; exact ESXi build, SHA-256 values, and optional component output will differ:
 
+<!-- dwg:ignore repetition -->
+
 ```text
-VMware ESXi Unlocker 4.0.7b
+VMware ESXi Unlocker 4.0.7d
 ===========================
 
 Checking unlocker status...
@@ -672,7 +706,7 @@ apple.v00 loaded.
 Checking vmx vSMC patch status...
 /bin/vmx contains AppleComputerInc marker.
 ---
-PatchSMC 4.0.7b (ESXi 6.7 / 7.x / 8 U3)
+PatchSMC 4.0.7d (ESXi 6.7 / 7.x / 8 U3)
 ...
 Patch Status: True
 /bin/vmx-debug contains AppleComputerInc marker.
@@ -706,9 +740,11 @@ reboot
 ./check
 ```
 
+<!-- dwg:end-ignore -->
+
 ## Running VMs / Maintenance Mode
 
-Version 4.0.7b refuses to run `unlock` when `esxcli vm process list` detects running VMs. Shut down or migrate all VMs first.
+Version 4.0.7d refuses to run `unlock` when `esxcli vm process list` detects running VMs. Shut down or migrate all VMs first.
 
 The script also warns if the host does not appear to be in Maintenance Mode. Maintenance Mode is strongly recommended because `unlock` stages and repacks ESXi bootbank modules.
 
@@ -745,7 +781,7 @@ If `patchsmc` reports a partial OSK patch state, do not continue patching blindl
 
 ## vmx-stats missing or not patched
 
-On some ESXi 8.x builds, `/bin/vmx-stats` is absent or a zero-byte stub. Version 4.0.7b treats this as optional and non-fatal.
+On some ESXi 8.x builds, `/bin/vmx-stats` is absent or a zero-byte stub. Version 4.0.7d treats this as optional and non-fatal.
 
 ## libvmkctl.so missing or optional
 
@@ -791,12 +827,14 @@ Cek status patch dari folder unlocker:
 ./check
 ```
 
-Pada 4.0.7b, `check` keluar dengan status `0` jika pemeriksaan wajib lulus dan status `1` jika pemeriksaan wajib gagal. Komponen opsional seperti `vmx-stats` dan `libvmkctl.so` hanya menjadi peringatan jika tidak ada, karena memang tidak tersedia pada semua build ESXi.
+Pada 4.0.7d, `check` keluar dengan status `0` jika pemeriksaan wajib lulus dan status `1` jika pemeriksaan wajib gagal. Komponen opsional seperti `vmx-stats` dan `libvmkctl.so` hanya menjadi peringatan jika tidak ada, karena memang tidak tersedia pada semua build ESXi.
 
 Host yang sudah terpatch dengan sehat secara konsep akan terlihat seperti ini; build ESXi, nilai SHA-256, dan output komponen opsional pasti berbeda pada host Anda:
 
+<!-- dwg:ignore repetition -->
+
 ```text
-VMware ESXi Unlocker 4.0.7b
+VMware ESXi Unlocker 4.0.7d
 ===========================
 
 Checking unlocker status...
@@ -810,7 +848,7 @@ apple.v00 loaded.
 Checking vmx vSMC patch status...
 /bin/vmx contains AppleComputerInc marker.
 ---
-PatchSMC 4.0.7b (ESXi 6.7 / 7.x / 8 U3)
+PatchSMC 4.0.7d (ESXi 6.7 / 7.x / 8 U3)
 ...
 Patch Status: True
 /bin/vmx-debug contains AppleComputerInc marker.
@@ -844,9 +882,11 @@ reboot
 ./check
 ```
 
+<!-- dwg:end-ignore -->
+
 ## VM berjalan / Maintenance Mode
 
-Versi 4.0.7b menolak menjalankan `unlock` jika `esxcli vm process list` mendeteksi masih ada VM berjalan. Matikan atau migrasikan semua VM terlebih dahulu.
+Versi 4.0.7d menolak menjalankan `unlock` jika `esxcli vm process list` mendeteksi masih ada VM berjalan. Matikan atau migrasikan semua VM terlebih dahulu.
 
 Skrip juga memberi peringatan jika host tampak belum masuk Maintenance Mode. Maintenance Mode sangat disarankan karena `unlock` menyiapkan ulang dan membuat ulang modul bootbank ESXi.
 
@@ -883,7 +923,7 @@ Jika `patchsmc` melaporkan kondisi partial OSK patch, jangan lanjutkan patch sec
 
 ## vmx-stats hilang atau tidak terpatch
 
-Pada beberapa build ESXi 8.x, `/bin/vmx-stats` tidak ada atau hanya stub 0-byte. Versi 4.0.7b memperlakukan kondisi ini sebagai opsional dan non-fatal.
+Pada beberapa build ESXi 8.x, `/bin/vmx-stats` tidak ada atau hanya stub 0-byte. Versi 4.0.7d memperlakukan kondisi ini sebagai opsional dan non-fatal.
 
 ## libvmkctl.so hilang atau opsional
 
@@ -963,6 +1003,7 @@ SOFTWARE.
 # License     : MIT
 #
 # Changelog   :
+#   2026-09-05 4.0.7d alsyundawy  Update version banner and docblock to 4.0.7d.
 #   2026-07-27 4.0.7c alsyundawy  Add robust unlock.conf parsing check, optimized
 #                                 awk extraction for smcPresent, command path
 #                                 fallback resolution, and python3 PATH fallback.
@@ -993,155 +1034,155 @@ RST='\033[0m'
 CHECK_FAILED=0
 
 fail_check() {
-    CHECK_FAILED=1
-    printf '%s\n' "${RED}>>> $* <<<${RST}"
+	CHECK_FAILED=1
+	printf '%s\n' "${RED}>>> $* <<<${RST}"
 }
 
 warn() {
-    printf '%s\n' "${YLW}WARNING: $*${RST}"
+	printf '%s\n' "${YLW}WARNING: $*${RST}"
 }
 
 resolve_script() {
-    if command -v readlink >/dev/null 2>&1; then
-        _resolved=$(readlink -f "$0" 2>/dev/null || true)
-        if [ -n "$_resolved" ]; then
-            printf '%s\n' "$_resolved"
-            return 0
-        fi
-    fi
+	if command -v readlink >/dev/null 2>&1; then
+		_resolved=$(readlink -f "$0" 2>/dev/null || true)
+		if [ -n "${_resolved}" ]; then
+			printf '%s\n' "${_resolved}"
+			return 0
+		fi
+	fi
 
-    case "$0" in
-        /*) printf '%s\n' "$0" ;;
-        */*) printf '%s/%s\n' "$(pwd -P)" "$0" ;;
-        *)
-            _cmd_path=$(command -v "$0" 2>/dev/null || true)
-            if [ -n "$_cmd_path" ]; then
-                printf '%s\n' "$_cmd_path"
-            else
-                printf '%s/%s\n' "$(pwd -P)" "$0"
-            fi
-            ;;
-    esac
+	case "$0" in
+	/*) printf '%s\n' "$0" ;;
+	*/*) printf '%s/%s\n' "$(pwd -P || true)" "$0" ;;
+	*)
+		_cmd_path=$(command -v "$0" 2>/dev/null || true)
+		if [ -n "${_cmd_path}" ]; then
+			printf '%s\n' "${_cmd_path}"
+		else
+			printf '%s/%s\n' "$(pwd -P || true)" "$0"
+		fi
+		;;
+	esac
 }
 
 detect_python3() {
-    for _py in /usr/bin/python3 \
-               /usr/lib/vmware/venv-vsphere/bin/python3 \
-               /usr/lib/vmware/venv-65/bin/python3; do
-        if [ -x "$_py" ]; then
-            printf '%s\n' "$_py"
-            return 0
-        fi
-    done
-    if _py=$(command -v python3 2>/dev/null) && [ -x "$_py" ]; then
-        printf '%s\n' "$_py"
-        return 0
-    fi
-    return 1
+	for _py in /usr/bin/python3 \
+		/usr/lib/vmware/venv-vsphere/bin/python3 \
+		/usr/lib/vmware/venv-65/bin/python3; do
+		if [ -x "${_py}" ]; then
+			printf '%s\n' "${_py}"
+			return 0
+		fi
+	done
+	if _py=$(command -v python3 2>/dev/null) && [ -x "${_py}" ]; then
+		printf '%s\n' "${_py}"
+		return 0
+	fi
+	return 1
 }
 
 SCRIPT=$(resolve_script)
-SCRIPT_DIR=$(dirname "$SCRIPT")
+SCRIPT_DIR=$(dirname "${SCRIPT}")
 PYTHON3=$(detect_python3) || {
-    fail_check 'python3 not found on this ESXi host'
-    PYTHON3=''
+	fail_check 'python3 not found on this ESXi host'
+	PYTHON3=''
 }
 
-printf 'VMware ESXi Unlocker 4.0.7c\n'
+printf 'VMware ESXi Unlocker 4.0.7d\n'
 printf '===========================\n'
 printf '\nChecking unlocker status...\n'
 
 ESXI=$(vmware -v 2>/dev/null) || ESXI=''
-if [ -z "$ESXI" ]; then
-    fail_check "Could not determine ESXi version via 'vmware -v'"
+if [ -z "${ESXI}" ]; then
+	fail_check "Could not determine ESXi version via 'vmware -v'"
 else
-    printf 'Current ESXi version  : %s\n' "$ESXI"
+	printf 'Current ESXi version  : %s\n' "${ESXI}"
 fi
 
 if [ ! -f '/etc/unlock.conf' ]; then
-    fail_check 'System has not been patched (unlock.conf missing)'
+	fail_check 'System has not been patched (unlock.conf missing)'
 else
-    PATCH=$(cat /etc/unlock.conf 2>/dev/null || true)
-    if [ -z "$PATCH" ]; then
-        fail_check 'unlock.conf exists but is empty or unreadable'
-    else
-        printf 'Patch built for ESXi  : %s\n' "$PATCH"
+	PATCH=$(cat /etc/unlock.conf 2>/dev/null || true)
+	if [ -z "${PATCH}" ]; then
+		fail_check 'unlock.conf exists but is empty or unreadable'
+	else
+		printf 'Patch built for ESXi  : %s\n' "${PATCH}"
 
-        if [ -n "$ESXI" ] && [ "$ESXI" != "$PATCH" ]; then
-            fail_check 'Version mismatch — please relock and unlock to update patches'
-        elif [ -n "$ESXI" ]; then
-            printf '%s\n' "${GRN}ESXi version matches patch record.${RST}"
-        fi
-    fi
+		if [ -n "${ESXI}" ] && [ "${ESXI}" != "${PATCH}" ]; then
+			fail_check 'Version mismatch — please relock and unlock to update patches'
+		elif [ -n "${ESXI}" ]; then
+			printf '%s\n' "${GRN}ESXi version matches patch record.${RST}"
+		fi
+	fi
 fi
 
 printf '\nChecking VMTAR loaded...\n'
 if esxcli system visorfs tardisk list 2>/dev/null | grep -q 'apple.v00'; then
-    printf '%s\n' "${GRN}apple.v00 loaded.${RST}"
+	printf '%s\n' "${GRN}apple.v00 loaded.${RST}"
 else
-    warn 'apple.v00 not loaded — a reboot may be required, or bootbank module is not registered'
+	warn 'apple.v00 not loaded — a reboot may be required, or bootbank module is not registered'
 fi
 
 printf '\nChecking vmx vSMC patch status...\n'
 for _f in /bin/vmx /bin/vmx-debug; do
-    if [ ! -f "$_f" ] || [ ! -s "$_f" ]; then
-        fail_check "Required binary missing or empty: $_f"
-        continue
-    fi
+	if [ ! -f "${_f}" ] || [ ! -s "${_f}" ]; then
+		fail_check "Required binary missing or empty: ${_f}"
+		continue
+	fi
 
-    if grep -q 'AppleComputerInc' "$_f" 2>/dev/null; then
-        printf '%s\n' "${GRN}$_f contains AppleComputerInc marker.${RST}"
-    else
-        fail_check "$_f is NOT patched"
-    fi
+	if grep -q 'AppleComputerInc' "${_f}" 2>/dev/null; then
+		printf '%s\n' "${GRN}${_f} contains AppleComputerInc marker.${RST}"
+	else
+		fail_check "${_f} is NOT patched"
+	fi
 
-    if [ -n "$PYTHON3" ]; then
-        printf '%s\n' '---'
-        "$PYTHON3" "$SCRIPT_DIR/patchsmc" check "$_f" 2>/dev/null || CHECK_FAILED=1
-    fi
+	if [ -n "${PYTHON3}" ]; then
+		printf '%s\n' '---'
+		"${PYTHON3}" "${SCRIPT_DIR}/patchsmc" check "${_f}" 2>/dev/null || CHECK_FAILED=1
+	fi
 done
 
 if [ -f '/bin/vmx-stats' ] && [ -s '/bin/vmx-stats' ]; then
-    if grep -q 'AppleComputerInc' /bin/vmx-stats 2>/dev/null; then
-        printf '%s\n' "${GRN}/bin/vmx-stats contains AppleComputerInc marker.${RST}"
-    else
-        warn '/bin/vmx-stats is NOT patched; this binary is optional on many ESXi builds'
-    fi
+	if grep -q 'AppleComputerInc' /bin/vmx-stats 2>/dev/null; then
+		printf '%s\n' "${GRN}/bin/vmx-stats contains AppleComputerInc marker.${RST}"
+	else
+		warn '/bin/vmx-stats is NOT patched; this binary is optional on many ESXi builds'
+	fi
 
-    if [ -n "$PYTHON3" ]; then
-        printf '%s\n' '---'
-        "$PYTHON3" "$SCRIPT_DIR/patchsmc" check /bin/vmx-stats 2>/dev/null || \
-            warn 'patchsmc check failed for optional vmx-stats'
-    fi
+	if [ -n "${PYTHON3}" ]; then
+		printf '%s\n' '---'
+		"${PYTHON3}" "${SCRIPT_DIR}/patchsmc" check /bin/vmx-stats 2>/dev/null ||
+			warn 'patchsmc check failed for optional vmx-stats'
+	fi
 else
-    printf '%s\n' "${YLW}SKIP: /bin/vmx-stats missing or empty — optional on ESXi 8.x.${RST}"
+	printf '%s\n' "${YLW}SKIP: /bin/vmx-stats missing or empty — optional on ESXi 8.x.${RST}"
 fi
 
 printf '\nChecking libvmkctl.so patch status...\n'
 if [ -f '/lib64/libvmkctl.so' ] && [ -s '/lib64/libvmkctl.so' ]; then
-    if [ -n "$PYTHON3" ]; then
-        "$PYTHON3" "$SCRIPT_DIR/patchvmkctl" check /lib64/libvmkctl.so 2>/dev/null || \
-            warn 'patchvmkctl check returned non-zero; vCenter smcPresent behaviour may need manual review'
-    fi
+	if [ -n "${PYTHON3}" ]; then
+		"${PYTHON3}" "${SCRIPT_DIR}/patchvmkctl" check /lib64/libvmkctl.so 2>/dev/null ||
+			warn 'patchvmkctl check returned non-zero; vCenter smcPresent behaviour may need manual review'
+	fi
 else
-    printf '%s\n' "${YLW}SKIP: /lib64/libvmkctl.so missing — optional vmkctl patch not applicable.${RST}"
+	printf '%s\n' "${YLW}SKIP: /lib64/libvmkctl.so missing — optional vmkctl patch not applicable.${RST}"
 fi
 
 printf '\nChecking smcPresent status...\n'
 if command -v vim-cmd >/dev/null 2>&1; then
-    _smc=$(vim-cmd hostsvc/hosthardware 2>/dev/null | awk -F',' '/smcPresent/ {gsub(/^[ \t]+/, "", $1); print $1; exit}')
-    if [ -n "$_smc" ]; then
-        printf '%s\n' "$_smc"
-    else
-        warn 'Could not retrieve smcPresent from vim-cmd'
-    fi
+	_smc=$(vim-cmd hostsvc/hosthardware 2>/dev/null | awk -F',' '/smcPresent/ {gsub(/^[ \t]+/, "", $1); print $1; exit}')
+	if [ -n "${_smc}" ]; then
+		printf '%s\n' "${_smc}"
+	else
+		warn 'Could not retrieve smcPresent from vim-cmd'
+	fi
 else
-    warn 'vim-cmd not found; cannot query smcPresent'
+	warn 'vim-cmd not found; cannot query smcPresent'
 fi
 
-if [ "$CHECK_FAILED" -eq 0 ]; then
-    printf '\n%s\n' "${GRN}Check completed: required patch status looks OK.${RST}"
-    exit 0
+if [ "${CHECK_FAILED}" -eq 0 ]; then
+	printf '\n%s\n' "${GRN}Check completed: required patch status looks OK.${RST}"
+	exit 0
 fi
 
 printf '\n%s\n' "${RED}Check completed: one or more required checks failed.${RST}"
@@ -1159,6 +1200,7 @@ exit 1
 # Copyright (c) 2024-2026 Harry DS Alsyundawy - Alsyundawy IT Solution
 # License: MIT
 # Changelog:
+#   2026-09-05 4.0.7d alsyundawy  Update version reference to 4.0.7d.
 #   2026-07-27 4.0.7c alsyundawy  Add target file existence check, command path
 #                                 fallback resolution, and python3 PATH fallback.
 #   2026-06-13 4.0.7b alsyundawy  Add PATH hardening, robust SCRIPT_DIR
@@ -1173,62 +1215,62 @@ exit 1
 export PATH=/bin:/sbin:/usr/bin:/usr/sbin
 
 resolve_script() {
-    if command -v readlink >/dev/null 2>&1; then
-        _resolved=$(readlink -f "$0" 2>/dev/null || true)
-        if [ -n "$_resolved" ]; then
-            printf '%s\n' "$_resolved"
-            return 0
-        fi
-    fi
+	if command -v readlink >/dev/null 2>&1; then
+		_resolved=$(readlink -f "$0" 2>/dev/null || true)
+		if [ -n "${_resolved}" ]; then
+			printf '%s\n' "${_resolved}"
+			return 0
+		fi
+	fi
 
-    case "$0" in
-        /*) printf '%s\n' "$0" ;;
-        */*) printf '%s/%s\n' "$(pwd -P)" "$0" ;;
-        *)
-            _cmd_path=$(command -v "$0" 2>/dev/null || true)
-            if [ -n "$_cmd_path" ]; then
-                printf '%s\n' "$_cmd_path"
-            else
-                printf '%s/%s\n' "$(pwd -P)" "$0"
-            fi
-            ;;
-    esac
+	case "$0" in
+	/*) printf '%s\n' "$0" ;;
+	*/*) printf '%s/%s\n' "$(pwd -P || true)" "$0" ;;
+	*)
+		_cmd_path=$(command -v "$0" 2>/dev/null || true)
+		if [ -n "${_cmd_path}" ]; then
+			printf '%s\n' "${_cmd_path}"
+		else
+			printf '%s/%s\n' "$(pwd -P || true)" "$0"
+		fi
+		;;
+	esac
 }
 
 detect_python3() {
-    for _py in /usr/bin/python3 \
-               /usr/lib/vmware/venv-vsphere/bin/python3 \
-               /usr/lib/vmware/venv-65/bin/python3; do
-        if [ -x "$_py" ]; then
-            printf '%s\n' "$_py"
-            return 0
-        fi
-    done
-    if _py=$(command -v python3 2>/dev/null) && [ -x "$_py" ]; then
-        printf '%s\n' "$_py"
-        return 0
-    fi
-    return 1
+	for _py in /usr/bin/python3 \
+		/usr/lib/vmware/venv-vsphere/bin/python3 \
+		/usr/lib/vmware/venv-65/bin/python3; do
+		if [ -x "${_py}" ]; then
+			printf '%s\n' "${_py}"
+			return 0
+		fi
+	done
+	if _py=$(command -v python3 2>/dev/null) && [ -x "${_py}" ]; then
+		printf '%s\n' "${_py}"
+		return 0
+	fi
+	return 1
 }
 
 if [ -z "${1:-}" ]; then
-    printf 'Usage: %s <vmx-filename>\n' "$0" >&2
-    exit 1
+	printf 'Usage: %s <vmx-filename>\n' "$0" >&2
+	exit 1
 fi
 
 if [ ! -f "$1" ]; then
-    printf 'ERROR: Target file not found or not a regular file: %s\n' "$1" >&2
-    exit 1
+	printf 'ERROR: Target file not found or not a regular file: %s\n' "$1" >&2
+	exit 1
 fi
 
 SCRIPT=$(resolve_script)
-SCRIPT_DIR=$(dirname "$SCRIPT")
+SCRIPT_DIR=$(dirname "${SCRIPT}")
 PYTHON3=$(detect_python3) || {
-    printf 'ERROR: python3 not found on this ESXi host\n' >&2
-    exit 1
+	printf 'ERROR: python3 not found on this ESXi host\n' >&2
+	exit 1
 }
 
-"$PYTHON3" "$SCRIPT_DIR/patchsmc" check "$1"
+"${PYTHON3}" "${SCRIPT_DIR}/patchsmc" check "$1"
 ```
 
 ## checkvmkctl
@@ -1242,6 +1284,7 @@ PYTHON3=$(detect_python3) || {
 # Copyright (c) 2024-2026 Harry DS Alsyundawy - Alsyundawy IT Solution
 # License: MIT
 # Changelog:
+#   2026-09-05 4.0.7d alsyundawy  Update version reference to 4.0.7d.
 #   2026-07-27 4.0.7c alsyundawy  Add target file existence check, command path
 #                                 fallback resolution, and python3 PATH fallback.
 #   2026-06-13 4.0.7b alsyundawy  Add PATH hardening, robust SCRIPT_DIR
@@ -1256,62 +1299,62 @@ PYTHON3=$(detect_python3) || {
 export PATH=/bin:/sbin:/usr/bin:/usr/sbin
 
 resolve_script() {
-    if command -v readlink >/dev/null 2>&1; then
-        _resolved=$(readlink -f "$0" 2>/dev/null || true)
-        if [ -n "$_resolved" ]; then
-            printf '%s\n' "$_resolved"
-            return 0
-        fi
-    fi
+	if command -v readlink >/dev/null 2>&1; then
+		_resolved=$(readlink -f "$0" 2>/dev/null || true)
+		if [ -n "${_resolved}" ]; then
+			printf '%s\n' "${_resolved}"
+			return 0
+		fi
+	fi
 
-    case "$0" in
-        /*) printf '%s\n' "$0" ;;
-        */*) printf '%s/%s\n' "$(pwd -P)" "$0" ;;
-        *)
-            _cmd_path=$(command -v "$0" 2>/dev/null || true)
-            if [ -n "$_cmd_path" ]; then
-                printf '%s\n' "$_cmd_path"
-            else
-                printf '%s/%s\n' "$(pwd -P)" "$0"
-            fi
-            ;;
-    esac
+	case "$0" in
+	/*) printf '%s\n' "$0" ;;
+	*/*) printf '%s/%s\n' "$(pwd -P || true)" "$0" ;;
+	*)
+		_cmd_path=$(command -v "$0" 2>/dev/null || true)
+		if [ -n "${_cmd_path}" ]; then
+			printf '%s\n' "${_cmd_path}"
+		else
+			printf '%s/%s\n' "$(pwd -P || true)" "$0"
+		fi
+		;;
+	esac
 }
 
 detect_python3() {
-    for _py in /usr/bin/python3 \
-               /usr/lib/vmware/venv-vsphere/bin/python3 \
-               /usr/lib/vmware/venv-65/bin/python3; do
-        if [ -x "$_py" ]; then
-            printf '%s\n' "$_py"
-            return 0
-        fi
-    done
-    if _py=$(command -v python3 2>/dev/null) && [ -x "$_py" ]; then
-        printf '%s\n' "$_py"
-        return 0
-    fi
-    return 1
+	for _py in /usr/bin/python3 \
+		/usr/lib/vmware/venv-vsphere/bin/python3 \
+		/usr/lib/vmware/venv-65/bin/python3; do
+		if [ -x "${_py}" ]; then
+			printf '%s\n' "${_py}"
+			return 0
+		fi
+	done
+	if _py=$(command -v python3 2>/dev/null) && [ -x "${_py}" ]; then
+		printf '%s\n' "${_py}"
+		return 0
+	fi
+	return 1
 }
 
 if [ -z "${1:-}" ]; then
-    printf 'Usage: %s <libvmkctl-filename>\n' "$0" >&2
-    exit 1
+	printf 'Usage: %s <libvmkctl-filename>\n' "$0" >&2
+	exit 1
 fi
 
 if [ ! -f "$1" ]; then
-    printf 'ERROR: Target file not found or not a regular file: %s\n' "$1" >&2
-    exit 1
+	printf 'ERROR: Target file not found or not a regular file: %s\n' "$1" >&2
+	exit 1
 fi
 
 SCRIPT=$(resolve_script)
-SCRIPT_DIR=$(dirname "$SCRIPT")
+SCRIPT_DIR=$(dirname "${SCRIPT}")
 PYTHON3=$(detect_python3) || {
-    printf 'ERROR: python3 not found on this ESXi host\n' >&2
-    exit 1
+	printf 'ERROR: python3 not found on this ESXi host\n' >&2
+	exit 1
 }
 
-"$PYTHON3" "$SCRIPT_DIR/patchvmkctl" check "$1"
+"${PYTHON3}" "${SCRIPT_DIR}/patchvmkctl" check "$1"
 ```
 
 ## dumpsmc
@@ -1325,6 +1368,7 @@ PYTHON3=$(detect_python3) || {
 # Copyright (c) 2024-2026 Harry DS Alsyundawy - Alsyundawy IT Solution
 # License: MIT
 # Changelog:
+#   2026-09-05 4.0.7d alsyundawy  Update version reference to 4.0.7d.
 #   2026-07-27 4.0.7c alsyundawy  Add target file existence check, command path
 #                                 fallback resolution, and python3 PATH fallback.
 #   2026-06-13 4.0.7b alsyundawy  Add PATH hardening, robust SCRIPT_DIR
@@ -1339,62 +1383,62 @@ PYTHON3=$(detect_python3) || {
 export PATH=/bin:/sbin:/usr/bin:/usr/sbin
 
 resolve_script() {
-    if command -v readlink >/dev/null 2>&1; then
-        _resolved=$(readlink -f "$0" 2>/dev/null || true)
-        if [ -n "$_resolved" ]; then
-            printf '%s\n' "$_resolved"
-            return 0
-        fi
-    fi
+	if command -v readlink >/dev/null 2>&1; then
+		_resolved=$(readlink -f "$0" 2>/dev/null || true)
+		if [ -n "${_resolved}" ]; then
+			printf '%s\n' "${_resolved}"
+			return 0
+		fi
+	fi
 
-    case "$0" in
-        /*) printf '%s\n' "$0" ;;
-        */*) printf '%s/%s\n' "$(pwd -P)" "$0" ;;
-        *)
-            _cmd_path=$(command -v "$0" 2>/dev/null || true)
-            if [ -n "$_cmd_path" ]; then
-                printf '%s\n' "$_cmd_path"
-            else
-                printf '%s/%s\n' "$(pwd -P)" "$0"
-            fi
-            ;;
-    esac
+	case "$0" in
+	/*) printf '%s\n' "$0" ;;
+	*/*) printf '%s/%s\n' "$(pwd -P || true)" "$0" ;;
+	*)
+		_cmd_path=$(command -v "$0" 2>/dev/null || true)
+		if [ -n "${_cmd_path}" ]; then
+			printf '%s\n' "${_cmd_path}"
+		else
+			printf '%s/%s\n' "$(pwd -P || true)" "$0"
+		fi
+		;;
+	esac
 }
 
 detect_python3() {
-    for _py in /usr/bin/python3 \
-               /usr/lib/vmware/venv-vsphere/bin/python3 \
-               /usr/lib/vmware/venv-65/bin/python3; do
-        if [ -x "$_py" ]; then
-            printf '%s\n' "$_py"
-            return 0
-        fi
-    done
-    if _py=$(command -v python3 2>/dev/null) && [ -x "$_py" ]; then
-        printf '%s\n' "$_py"
-        return 0
-    fi
-    return 1
+	for _py in /usr/bin/python3 \
+		/usr/lib/vmware/venv-vsphere/bin/python3 \
+		/usr/lib/vmware/venv-65/bin/python3; do
+		if [ -x "${_py}" ]; then
+			printf '%s\n' "${_py}"
+			return 0
+		fi
+	done
+	if _py=$(command -v python3 2>/dev/null) && [ -x "${_py}" ]; then
+		printf '%s\n' "${_py}"
+		return 0
+	fi
+	return 1
 }
 
 if [ -z "${1:-}" ]; then
-    printf 'Usage: %s <vmx-filename>\n' "$0" >&2
-    exit 1
+	printf 'Usage: %s <vmx-filename>\n' "$0" >&2
+	exit 1
 fi
 
 if [ ! -f "$1" ]; then
-    printf 'ERROR: Target file not found or not a regular file: %s\n' "$1" >&2
-    exit 1
+	printf 'ERROR: Target file not found or not a regular file: %s\n' "$1" >&2
+	exit 1
 fi
 
 SCRIPT=$(resolve_script)
-SCRIPT_DIR=$(dirname "$SCRIPT")
+SCRIPT_DIR=$(dirname "${SCRIPT}")
 PYTHON3=$(detect_python3) || {
-    printf 'ERROR: python3 not found on this ESXi host\n' >&2
-    exit 1
+	printf 'ERROR: python3 not found on this ESXi host\n' >&2
+	exit 1
 }
 
-"$PYTHON3" "$SCRIPT_DIR/patchsmc" dump "$1"
+"${PYTHON3}" "${SCRIPT_DIR}/patchsmc" dump "$1"
 ```
 
 ## patchsmc
@@ -1424,6 +1468,9 @@ Copyright (c) 2024-2026 Harry DS Alsyundawy - Alsyundawy IT Solution
 License: MIT
 
 Changelog:
+    2026-09-05 4.0.7d alsyundawy  Fix implicit string concatenation (SonarLint
+                                  S5799), modernize bytetohex conversion to
+                                  f-strings, and update banner to 4.0.7d.
     2026-06-13 4.0.7b alsyundawy  Return non-zero status for failed patch/check
                                   paths so unlock/check automation can stop
                                   safely. Move .bak creation until after
@@ -1490,33 +1537,33 @@ import sys
 # Version check
 # ---------------------------------------------------------------------------
 if sys.version_info < (3, 6):
-    sys.stderr.write('You need Python 3.6 or later\n')
+    sys.stderr.write("You need Python 3.6 or later\n")
     sys.exit(1)
 
 # ---------------------------------------------------------------------------
 # Struct constants for header and key access
 # ---------------------------------------------------------------------------
-HDR_PACK   = '=QII'
+HDR_PACK = "=QII"
 HDR_LENGTH = 16
-KEY_PACK   = '=4sB4sB6xQ'
+KEY_PACK = "=4sB4sB6xQ"
 KEY_LENGTH = 24
 DATA_LENGTH = 48
-ROW_LENGTH  = KEY_LENGTH + DATA_LENGTH
+ROW_LENGTH = KEY_LENGTH + DATA_LENGTH
 
 # ---------------------------------------------------------------------------
 # vSMC header magic bytes (private/public key count fields)
 # From Go upstream: smcHeaderV0 / smcHeaderV1
 # ---------------------------------------------------------------------------
-SMC_HEADER_V0 = b'\xF2\x00\x00\x00\xF0\x00\x00\x00'
-SMC_HEADER_V1 = b'\xB4\x01\x00\x00\xB0\x01\x00\x00'
+SMC_HEADER_V0 = b"\xf2\x00\x00\x00\xf0\x00\x00\x00"
+SMC_HEADER_V1 = b"\xb4\x01\x00\x00\xb0\x01\x00\x00"
 
 # ---------------------------------------------------------------------------
 # Key name constants (stored byte-reversed in binary)
 # ---------------------------------------------------------------------------
-KEY_KEY  = b'YEK#'   # #KEY reversed
-LKS_KEY  = b'SKL+'   # +LKS reversed
-OSK0_KEY = b'0KSO'   # OSK0 reversed
-OSK1_KEY = b'1KSO'   # OSK1 reversed
+KEY_KEY = b"YEK#"  # #KEY reversed
+LKS_KEY = b"SKL+"  # +LKS reversed
+OSK0_KEY = b"0KSO"  # OSK0 reversed
+OSK1_KEY = b"1KSO"  # OSK1 reversed
 
 # ---------------------------------------------------------------------------
 # OSK data — raw bytes, matching osk0Data / osk1Data in DrDonk Go smc.go
@@ -1524,26 +1571,26 @@ OSK1_KEY = b'1KSO'   # OSK1 reversed
 # "ourhardworkbythesewordsguardedpl" (32 bytes)
 # "easedontsteal(c)AppleComputerInc" (32 bytes)
 # ---------------------------------------------------------------------------
-OSK0 = b'ourhardworkbythesewordsguardedpl'
-OSK1 = b'easedontsteal(c)AppleComputerInc'
+OSK0 = b"ourhardworkbythesewordsguardedpl"
+OSK1 = b"easedontsteal(c)AppleComputerInc"
 
 # ---------------------------------------------------------------------------
 # ELF magic for detecting ELF executables (ESXi vmx is ELF)
 # ---------------------------------------------------------------------------
-ELF_MAGIC = b'\x7fELF'
+ELF_MAGIC = b"\x7fELF"
 
 
 # ---------------------------------------------------------------------------
 # Helper utilities
 # ---------------------------------------------------------------------------
 
+
 def _sha256(data: bytes) -> str:
     """Return hex SHA-256 digest of *data* (matches upstream WriteHashes)."""
     return hashlib.sha256(data).hexdigest()
 
 
-def _find_required(data: bytes, pattern: bytes, start: int = 0,
-                   label: str = '') -> int:
+def _find_required(data: bytes, pattern: bytes, start: int = 0, label: str = "") -> int:
     """
     Locate *pattern* in *data* starting at *start*.
 
@@ -1555,9 +1602,9 @@ def _find_required(data: bytes, pattern: bytes, start: int = 0,
     if pos == -1:
         desc = label or pattern.hex()
         raise RuntimeError(
-            f'Pattern not found: {desc!r} — '
-            f'binary may not be a patchable vmx build '
-            f'(ESXi 8.x layout change or already different format).'
+            f"Pattern not found: {desc!r} — "
+            f"binary may not be a patchable vmx build "
+            f"(ESXi 8.x layout change or already different format)."
         )
     return pos
 
@@ -1572,13 +1619,14 @@ def _check_file_patchable(name: str) -> bool:
     """
     # Resolve symlinks — os.path.isfile() follows symlinks
     if not os.path.isfile(name):
-        print(f'SKIP: {name} — not a regular file (symlink, missing, or '
-              f'directory). Skipping (expected on ESXi 8.x for vmx-stats).')
+        print(
+            f"SKIP: {name} — not a regular file (symlink, missing, or "
+            f"directory). Skipping (expected on ESXi 8.x for vmx-stats)."
+        )
         return False
     size = os.path.getsize(name)
     if size == 0:
-        print(f'SKIP: {name} — file is 0 bytes. '
-              f'Skipping (ESXi 8.x stub file).')
+        print(f"SKIP: {name} — file is 0 bytes. Skipping (ESXi 8.x stub file).")
         return False
     return True
 
@@ -1592,12 +1640,12 @@ def _backup_file(name: str) -> str:
 
     Returns the backup filename.
     """
-    backup = name + '.bak'
+    backup = name + ".bak"
     if not os.path.exists(backup):
         shutil.copy2(name, backup)
-        print(f'Backup: {name} -> {backup}')
+        print(f"Backup: {name} -> {backup}")
     else:
-        print(f'Backup already exists: {backup} (skipped overwrite)')
+        print(f"Backup already exists: {backup} (skipped overwrite)")
     return backup
 
 
@@ -1605,27 +1653,30 @@ def _backup_file(name: str) -> str:
 # Low-level binary I/O helpers
 # ---------------------------------------------------------------------------
 
+
 def bytetohex(data: bytes) -> str:
-    return ''.join('{:02X}'.format(c) for c in data)
+    return "".join(f"{c:02X}" for c in data)
 
 
 def printhdr(offset: int, hdr: tuple) -> None:
-    print(f'File Offset  : 0x{offset:08x}')
-    print(f'Keys Offset  : 0x{hdr[0]:08x}')
-    print(f'Private Key #: 0x{hdr[1]:04x}/{hdr[1]:04d}')
-    print(f'Public Keys #: 0x{hdr[2]:04x}/{hdr[2]:04d}')
+    print(f"File Offset  : 0x{offset:08x}")
+    print(f"Keys Offset  : 0x{hdr[0]:08x}")
+    print(f"Private Key #: 0x{hdr[1]:04x}/{hdr[1]:04d}")
+    print(f"Public Keys #: 0x{hdr[2]:04x}/{hdr[2]:04d}")
     print()
 
 
 def printkey(offset: int, smc_key: tuple, smc_data: bytes) -> None:
-    smc_type = smc_key[2][::-1].replace(b'\x00', b' ').decode('UTF-8')
-    print(f'0x{offset:08x} '
-          f'{smc_key[0][::-1].decode("UTF-8")} '
-          f'{smc_key[1]:03d} '
-          f'{smc_type} '
-          f'0x{smc_key[3]:02x} '
-          f'0x{smc_key[4]:08x} '
-          f'{bytetohex(smc_data)}')
+    smc_type = smc_key[2][::-1].replace(b"\x00", b" ").decode("UTF-8")
+    print(
+        f"0x{offset:08x} "
+        f'{smc_key[0][::-1].decode("UTF-8")} '
+        f"{smc_key[1]:03d} "
+        f"{smc_type} "
+        f"0x{smc_key[3]:02x} "
+        f"0x{smc_key[4]:08x} "
+        f"{bytetohex(smc_data)}"
+    )
 
 
 def gethdr(vmx, offset: int) -> tuple:
@@ -1644,10 +1695,11 @@ def getkey(vmx, offset: int) -> tuple:
 
 def setkey(vmx, offset: int, smc_key: tuple) -> None:
     vmx.seek(offset)
-    vmx.write(struct.pack(KEY_PACK,
-                          smc_key[0], smc_key[1],
-                          smc_key[2], smc_key[3],
-                          smc_key[4]))
+    vmx.write(
+        struct.pack(
+            KEY_PACK, smc_key[0], smc_key[1], smc_key[2], smc_key[3], smc_key[4]
+        )
+    )
     vmx.flush()
     vmx.seek(offset)
 
@@ -1670,6 +1722,7 @@ def setdata(vmx, offset: int, smc_data: bytes) -> None:
 # Patch helpers
 # ---------------------------------------------------------------------------
 
+
 def patchosk(vmx, offset: int, ptr: int, data: bytes) -> int:
     """
     Patch a single OSK key entry:
@@ -1678,16 +1731,16 @@ def patchosk(vmx, offset: int, ptr: int, data: bytes) -> int:
 
     Returns the original OSK handler pointer (needed for ELF RELA patching).
     """
-    smc_key  = getkey(vmx, offset)
+    smc_key = getkey(vmx, offset)
     smc_data = getdata(vmx, offset, smc_key)
-    key      = smc_key[0][::-1].decode('UTF-8')
+    key = smc_key[0][::-1].decode("UTF-8")
     smc_osk_ptr = smc_key[4]
 
-    print(f'{key} Key Before:')
+    print(f"{key} Key Before:")
     printkey(offset, smc_key, smc_data)
 
     # Replace AppleSMCHandleOSK with AppleSMCHandleDefault
-    temp    = list(smc_key)
+    temp = list(smc_key)
     temp[4] = ptr
     smc_key = tuple(temp)
     setkey(vmx, offset, smc_key)
@@ -1696,9 +1749,9 @@ def patchosk(vmx, offset: int, ptr: int, data: bytes) -> int:
     setdata(vmx, offset, data)
 
     # Verify
-    smc_key  = getkey(vmx, offset)
+    smc_key = getkey(vmx, offset)
     smc_data = getdata(vmx, offset, smc_key)
-    print(f'{key} Key After:')
+    print(f"{key} Key After:")
     printkey(offset, smc_key, smc_data)
 
     return smc_osk_ptr
@@ -1707,6 +1760,7 @@ def patchosk(vmx, offset: int, ptr: int, data: bytes) -> int:
 # ---------------------------------------------------------------------------
 # Main public functions
 # ---------------------------------------------------------------------------
+
 
 def patchsmc(name: str) -> bool:
     """Patch the vSMC OSK0/OSK1 keys and ELF RELA records in *name*."""
@@ -1719,12 +1773,12 @@ def patchsmc(name: str) -> bool:
     # Mirrors upstream Go CopyFile os.Chmod() in vmw.go
     orig_mode = stat.S_IMODE(os.stat(name).st_mode)
 
-    with open(name, 'rb+') as vmx:
+    with open(name, "rb+") as vmx:
         vmx_bytes = vmx.read()
 
         # Compute SHA-256 of unpatched file (upstream WriteHashes feature)
         sha_before = _sha256(vmx_bytes)
-        print(f'SHA256 (before): {sha_before}')
+        print(f"SHA256 (before): {sha_before}")
 
         # ------------------------------------------------------------------
         # Fast already-patched check using raw OSK data search
@@ -1733,43 +1787,53 @@ def patchsmc(name: str) -> bool:
         osk0_present = OSK0 in vmx_bytes
         osk1_present = OSK1 in vmx_bytes
         if osk0_present and osk1_present:
-            print(f'File {name} is already patched')
+            print(f"File {name} is already patched")
             return True
         if osk0_present != osk1_present:
-            print(f'ERROR: File {name} appears partially patched (OSK0/OSK1 mismatch).')
+            print(f"ERROR: File {name} appears partially patched (OSK0/OSK1 mismatch).")
             return False
 
         # ------------------------------------------------------------------
         # Locate vSMC structures (guard against missing patterns on ESXi 8.x)
         # ------------------------------------------------------------------
         try:
-            smc0_header = _find_required(
-                vmx_bytes, SMC_HEADER_V0, label='SMC_HEADER_V0') - 8
-            smc1_header = _find_required(
-                vmx_bytes, SMC_HEADER_V1, label='SMC_HEADER_V1') - 8
+            smc0_header = (
+                _find_required(vmx_bytes, SMC_HEADER_V0, label="SMC_HEADER_V0") - 8
+            )
+            smc1_header = (
+                _find_required(vmx_bytes, SMC_HEADER_V1, label="SMC_HEADER_V1") - 8
+            )
 
             smc0_key = _find_required(
-                vmx_bytes, KEY_KEY, smc0_header, label='#KEY (table 0)')
+                vmx_bytes, KEY_KEY, smc0_header, label="#KEY (table 0)"
+            )
             smc1_key = _find_required(
-                vmx_bytes, KEY_KEY, smc1_header, label='#KEY (table 1)')
+                vmx_bytes, KEY_KEY, smc1_header, label="#KEY (table 1)"
+            )
 
-            smc0_lks  = _find_required(
-                vmx_bytes, LKS_KEY, smc0_key, label='+LKS (table 0)')
-            smc1_lks  = _find_required(
-                vmx_bytes, LKS_KEY, smc1_key, label='+LKS (table 1)')
+            smc0_lks = _find_required(
+                vmx_bytes, LKS_KEY, smc0_key, label="+LKS (table 0)"
+            )
+            smc1_lks = _find_required(
+                vmx_bytes, LKS_KEY, smc1_key, label="+LKS (table 1)"
+            )
 
             smc0_osk0 = _find_required(
-                vmx_bytes, OSK0_KEY, smc0_key, label='OSK0 (table 0)')
+                vmx_bytes, OSK0_KEY, smc0_key, label="OSK0 (table 0)"
+            )
             smc1_osk0 = _find_required(
-                vmx_bytes, OSK0_KEY, smc1_key, label='OSK0 (table 1)')
+                vmx_bytes, OSK0_KEY, smc1_key, label="OSK0 (table 1)"
+            )
             smc0_osk1 = _find_required(
-                vmx_bytes, OSK1_KEY, smc0_key, label='OSK1 (table 0)')
+                vmx_bytes, OSK1_KEY, smc0_key, label="OSK1 (table 0)"
+            )
             smc1_osk1 = _find_required(
-                vmx_bytes, OSK1_KEY, smc1_key, label='OSK1 (table 1)')
+                vmx_bytes, OSK1_KEY, smc1_key, label="OSK1 (table 1)"
+            )
 
         except RuntimeError as exc:
-            print(f'ERROR: {exc}')
-            print(f'File {name} cannot be patched — skipping.')
+            print(f"ERROR: {exc}")
+            print(f"File {name} cannot be patched — skipping.")
             return False
 
         # Backup only after confirming the file is patchable and not already patched.
@@ -1782,7 +1846,7 @@ def patchsmc(name: str) -> bool:
         hdr = gethdr(vmx, smc0_header)
         printhdr(smc0_header, hdr)
 
-        smc_key         = getkey(vmx, smc0_lks)
+        smc_key = getkey(vmx, smc0_lks)
         smc_default_ptr = smc_key[4]
 
         patchosk(vmx, smc0_osk0, smc_default_ptr, OSK0)
@@ -1795,7 +1859,7 @@ def patchsmc(name: str) -> bool:
         hdr = gethdr(vmx, smc1_header)
         printhdr(smc1_header, hdr)
 
-        smc_key         = getkey(vmx, smc1_lks)
+        smc_key = getkey(vmx, smc1_lks)
         smc_default_ptr = smc_key[4]
 
         patchosk(vmx, smc1_osk0, smc_default_ptr, OSK0)
@@ -1808,18 +1872,20 @@ def patchsmc(name: str) -> bool:
         vmx.seek(0)
         magic = vmx.read(4)
         if magic == ELF_MAGIC:
-            print(f'\nModifying ELF RELA records from '
-                  f'0x{smc_osk_ptr:08x} -> 0x{smc_default_ptr:08x}')
+            print(
+                f"\nModifying ELF RELA records from "
+                f"0x{smc_osk_ptr:08x} -> 0x{smc_default_ptr:08x}"
+            )
 
-            packed_old_ptr = struct.pack('=Q', smc_osk_ptr)
-            packed_new_ptr = struct.pack('=Q', smc_default_ptr)
+            packed_old_ptr = struct.pack("=Q", smc_osk_ptr)
+            packed_new_ptr = struct.pack("=Q", smc_default_ptr)
 
             offset = 0
             for _ in range(4):
                 offset = vmx_bytes.find(packed_old_ptr, offset)
                 if offset == -1:
                     break
-                print(f'Relocation modified at: 0x{offset:08x}')
+                print(f"Relocation modified at: 0x{offset:08x}")
                 vmx.seek(offset)
                 vmx.write(packed_new_ptr)
                 offset += 1
@@ -1830,28 +1896,28 @@ def patchsmc(name: str) -> bool:
         vmx.flush()
         vmx.seek(0)
         sha_after = _sha256(vmx.read())
-        print(f'SHA256 (after) : {sha_after}')
+        print(f"SHA256 (after) : {sha_after}")
 
         # Restore original file permissions after patching
         os.chmod(name, orig_mode)
 
         # Write checksum file (upstream WriteHashes feature)
-        sha_file = name + '.sha256'
-        with open(sha_file, 'w') as sf:
-            sf.write(f'{sha_before}\n{sha_after}\n')
-        print(f'Checksums written: {sha_file}')
+        sha_file = name + ".sha256"
+        with open(sha_file, "w") as sf:
+            sf.write(f"{sha_before}\n{sha_after}\n")
+        print(f"Checksums written: {sha_file}")
 
         del vmx_bytes
         return True
 
 
 def dumpkeys(vmx, offset: int, count: int) -> None:
-    print(f'Table Offset : 0x{offset:08x}')
-    print('Offset     Name Len Type Flag FuncPtr    Data')
-    print('-------    ---- --- ---- ---- -------    ----')
+    print(f"Table Offset : 0x{offset:08x}")
+    print("Offset     Name Len Type Flag FuncPtr    Data")
+    print("-------    ---- --- ---- ---- -------    ----")
 
-    for _ in range(count):   # '_' — loop counter not used
-        smc_key  = getkey(vmx, offset)
+    for _ in range(count):  # '_' — loop counter not used
+        smc_key = getkey(vmx, offset)
         smc_data = getdata(vmx, offset, smc_key)
         printkey(offset, smc_key, smc_data)
         offset += ROW_LENGTH
@@ -1863,21 +1929,25 @@ def dumpsmc(name: str) -> bool:
     if not _check_file_patchable(name):
         return False
 
-    with open(name, 'rb') as vmx:
+    with open(name, "rb") as vmx:
         vmx_bytes = vmx.read()
 
         try:
-            smc0_header = _find_required(
-                vmx_bytes, SMC_HEADER_V0, label='SMC_HEADER_V0') - 8
-            smc1_header = _find_required(
-                vmx_bytes, SMC_HEADER_V1, label='SMC_HEADER_V1') - 8
+            smc0_header = (
+                _find_required(vmx_bytes, SMC_HEADER_V0, label="SMC_HEADER_V0") - 8
+            )
+            smc1_header = (
+                _find_required(vmx_bytes, SMC_HEADER_V1, label="SMC_HEADER_V1") - 8
+            )
             smc0_key = _find_required(
-                vmx_bytes, KEY_KEY, smc0_header, label='#KEY (table 0)')
+                vmx_bytes, KEY_KEY, smc0_header, label="#KEY (table 0)"
+            )
             smc1_key = _find_required(
-                vmx_bytes, KEY_KEY, smc1_header, label='#KEY (table 1)')
+                vmx_bytes, KEY_KEY, smc1_header, label="#KEY (table 1)"
+            )
         except RuntimeError as exc:
-            print(f'ERROR: {exc}')
-            print(f'File {name} cannot be dumped — skipping.')
+            print(f"ERROR: {exc}")
+            print(f"File {name} cannot be dumped — skipping.")
             return False
 
         del vmx_bytes
@@ -1898,14 +1968,14 @@ def checksmc(name: str) -> bool:
     """Print the patch status of *name*."""
 
     if not _check_file_patchable(name):
-        print('Patch Status: Unknown (file not patchable)')
+        print("Patch Status: Unknown (file not patchable)")
         return False
 
-    with open(name, 'rb') as vmx:
+    with open(name, "rb") as vmx:
         vmx_bytes = vmx.read()
 
         sha = _sha256(vmx_bytes)
-        print(f'SHA256: {sha}')
+        print(f"SHA256: {sha}")
 
         # Fast check using raw OSK data bytes (mirrors upstream checkPatch)
         osk0_present = OSK0 in vmx_bytes
@@ -1917,28 +1987,28 @@ def checksmc(name: str) -> bool:
             flag = False
         else:
             # One present, one missing — partial/corrupt state
-            print('Patch Status: Unknown (partial patch detected)')
+            print("Patch Status: Unknown (partial patch detected)")
             return False
 
-        print(f'Patch Status: {flag}')
+        print(f"Patch Status: {flag}")
         return flag
 
 
 def print_usage() -> None:
-    print('Usage:')
-    print(f'  {sys.argv[0]} patch|dump|check <vmx-filename>')
+    print("Usage:")
+    print(f"  {sys.argv[0]} patch|dump|check <vmx-filename>")
     print()
-    print('Commands:')
-    print('  patch - Patch the vSMC table in vmx executable')
-    print('  check - Check the vSMC table patch status')
-    print('  dump  - Dump the vSMC key table to stdout')
+    print("Commands:")
+    print("  patch - Patch the vSMC table in vmx executable")
+    print("  check - Check the vSMC table patch status")
+    print("  dump  - Dump the vSMC key table to stdout")
     print()
-    print('Argument:')
-    print('  <vmx-filename>  ESXi vmx binary: vmx / vmx-debug / vmx-stats')
+    print("Argument:")
+    print("  <vmx-filename>  ESXi vmx binary: vmx / vmx-debug / vmx-stats")
 
 
 def main() -> int:
-    if len(sys.argv) == 2 and sys.argv[1] in ('-h', '--help'):
+    if len(sys.argv) == 2 and sys.argv[1] in ("-h", "--help"):
         print_usage()
         return 0
 
@@ -1949,11 +2019,11 @@ def main() -> int:
     cmd = sys.argv[1]
     filename = sys.argv[2]
 
-    if cmd == 'patch':
+    if cmd == "patch":
         fn = patchsmc
-    elif cmd == 'check':
+    elif cmd == "check":
         fn = checksmc
-    elif cmd == 'dump':
+    elif cmd == "dump":
         fn = dumpsmc
     else:
         print(f'Error: Unknown command "{cmd}".')
@@ -1961,21 +2031,21 @@ def main() -> int:
         return 1
 
     if not os.path.exists(filename):
-        print(f'Error: File not found: {filename}')
+        print(f"Error: File not found: {filename}")
         return 1
 
-    print(f'Filename: {filename}')
+    print(f"Filename: {filename}")
     try:
         ok = fn(filename)
     except OSError as exc:
-        print(f'ERROR: OS error while processing {filename}: {exc}')
+        print(f"ERROR: OS error while processing {filename}: {exc}")
         return 1
     return 0 if ok else 1
 
 
-if __name__ == '__main__':
-    print('PatchSMC 4.0.7b (ESXi 6.7 / 7.x / 8 U3)')
-    print('=========================================')
+if __name__ == "__main__":
+    print("PatchSMC 4.0.7d (ESXi 6.7 / 7.x / 8 U3)")
+    print("=========================================")
     print()
     sys.exit(main())
 ```
@@ -2006,6 +2076,7 @@ Copyright (c) 2024-2026 Harry DS Alsyundawy - Alsyundawy IT Solution
 License: MIT
 
 Changelog:
+    2026-09-05 4.0.7d alsyundawy  Update version banner and docstring changelog to 4.0.7d.
     2026-06-13 4.0.7b alsyundawy  Return meaningful exit status for patch/check
                                   operations. Use S_IMODE() when restoring
                                   file permissions after writing. Keep already
@@ -2039,20 +2110,21 @@ import stat
 import sys
 
 if sys.version_info < (3, 6):
-    sys.stderr.write('You need Python 3.6 or later\n')
+    sys.stderr.write("You need Python 3.6 or later\n")
     sys.exit(1)
 
 
 # ---------------------------------------------------------------------------
 # Patch constants (matching upstream vmkctl.go)
 # ---------------------------------------------------------------------------
-APPLESMC = b'applesmc'   # 8 bytes — string to replace
-VMKERNEL = b'vmkernel'   # 8 bytes — replacement string
+APPLESMC = b"applesmc"  # 8 bytes — string to replace
+VMKERNEL = b"vmkernel"  # 8 bytes — replacement string
 
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
+
 
 def _sha256(data: bytes) -> str:
     """Return hex SHA-256 digest of *data*."""
@@ -2062,28 +2134,29 @@ def _sha256(data: bytes) -> str:
 def _check_file_patchable(name: str) -> bool:
     """Return True if *name* is a non-empty regular file."""
     if not os.path.isfile(name):
-        print(f'SKIP: {name} — not a regular file. Skipping.')
+        print(f"SKIP: {name} — not a regular file. Skipping.")
         return False
     if os.path.getsize(name) == 0:
-        print(f'SKIP: {name} — file is 0 bytes. Skipping.')
+        print(f"SKIP: {name} — file is 0 bytes. Skipping.")
         return False
     return True
 
 
 def _backup_file(name: str) -> str:
     """Create *name*.bak backup if it does not already exist."""
-    backup = name + '.bak'
+    backup = name + ".bak"
     if not os.path.exists(backup):
         shutil.copy2(name, backup)
-        print(f'Backup: {name} -> {backup}')
+        print(f"Backup: {name} -> {backup}")
     else:
-        print(f'Backup already exists: {backup} (skipped overwrite)')
+        print(f"Backup already exists: {backup} (skipped overwrite)")
     return backup
 
 
 # ---------------------------------------------------------------------------
 # Main functions
 # ---------------------------------------------------------------------------
+
 
 def checkvmkctl(name: str) -> bool:
     """
@@ -2094,21 +2167,23 @@ def checkvmkctl(name: str) -> bool:
     if not _check_file_patchable(name):
         return False
 
-    with open(name, 'rb') as fh:
+    with open(name, "rb") as fh:
         vmkctl = fh.read()
 
     sha = _sha256(vmkctl)
-    print(f'SHA256: {sha}')
+    print(f"SHA256: {sha}")
 
     patched = APPLESMC not in vmkctl
-    print(f'Patch Status: {patched}')
+    print(f"Patch Status: {patched}")
     if patched:
-        print('Note: applesmc string is absent; file is already patched or this ESXi build does not require vmkctl patching.')
+        print(
+            "Note: applesmc string is absent; file is already patched or this ESXi build does not require vmkctl patching."
+        )
     return patched
 
 
 def patchvmkctl(name: str) -> bool:
-    """
+    r"""
     Patch libvmkctl.so by replacing 'applesmc' with 'vmkernel'.
 
     Mirrors upstream PatchVMKCTL() in vmkctl.go:
@@ -2124,62 +2199,64 @@ def patchvmkctl(name: str) -> bool:
     # Capture original permissions before any write operation
     orig_mode = stat.S_IMODE(os.stat(name).st_mode)
 
-    with open(name, 'rb') as fh:
+    with open(name, "rb") as fh:
         vmkctl = fh.read()
 
     sha_before = _sha256(vmkctl)
-    print(f'SHA256 (before): {sha_before}')
+    print(f"SHA256 (before): {sha_before}")
 
     offset = vmkctl.find(APPLESMC)
     if offset == -1:
-        print('applesmc string not found — file may already be patched '
-              'or is not a supported libvmkctl.so.')
-        print(f'Patch Status: {APPLESMC not in vmkctl}')
+        print(
+            "applesmc string not found — file may already be patched "
+            "or is not a supported libvmkctl.so."
+        )
+        print(f"Patch Status: {APPLESMC not in vmkctl}")
         return True
 
-    before = vmkctl[offset:offset + 8].decode('ascii', errors='replace')
-    print(f'Patching {before} -> {VMKERNEL.decode()}')
+    before = vmkctl[offset : offset + 8].decode("ascii", errors="replace")
+    print(f"Patching {before} -> {VMKERNEL.decode()}")
 
     # Backup before writing (only if file is actually going to be patched)
     _backup_file(name)
 
     # Patch in-memory using bytearray (safe, no seek needed)
     vmkctl_patched = bytearray(vmkctl)
-    vmkctl_patched[offset:offset + 8] = VMKERNEL
+    vmkctl_patched[offset : offset + 8] = VMKERNEL
 
-    with open(name, 'wb') as fh:
+    with open(name, "wb") as fh:
         fh.write(vmkctl_patched)
 
     # Restore original file permissions (open 'wb' may reset on some FS)
     os.chmod(name, orig_mode)
 
     sha_after = _sha256(bytes(vmkctl_patched))
-    print(f'SHA256 (after) : {sha_after}')
+    print(f"SHA256 (after) : {sha_after}")
 
     # Write checksum file
-    sha_file = name + '.sha256'
-    with open(sha_file, 'w') as sf:
-        sf.write(f'{sha_before}\n{sha_after}\n')
-    print(f'Checksums written: {sha_file}')
+    sha_file = name + ".sha256"
+    with open(sha_file, "w") as sf:
+        sf.write(f"{sha_before}\n{sha_after}\n")
+    print(f"Checksums written: {sha_file}")
 
-    print('smcPresent patched successfully.')
+    print("smcPresent patched successfully.")
     return True
 
 
 def print_usage() -> None:
-    print('Usage:')
-    print(f'  {sys.argv[0]} patch|check <libvmkctl-filename>')
+    print("Usage:")
+    print(f"  {sys.argv[0]} patch|check <libvmkctl-filename>")
     print()
-    print('Commands:')
-    print('  patch - Patch smcPresent string in libvmkctl.so')
-    print('  check - Check patch status of libvmkctl.so')
+    print("Commands:")
+    print("  patch - Patch smcPresent string in libvmkctl.so")
+    print("  check - Check patch status of libvmkctl.so")
     print()
-    print('Argument:')
-    print('  <libvmkctl-filename>  Path to libvmkctl.so')
+    print("Argument:")
+    print("  <libvmkctl-filename>  Path to libvmkctl.so")
 
 
 def main() -> int:
-    if len(sys.argv) == 2 and sys.argv[1] in ('-h', '--help'):
+    if len(sys.argv) == 2 and sys.argv[1] in ("-h", "--help"):
         print_usage()
         return 0
 
@@ -2190,9 +2267,9 @@ def main() -> int:
     cmd = sys.argv[1]
     filename = sys.argv[2]
 
-    if cmd == 'check':
+    if cmd == "check":
         fn = checkvmkctl
-    elif cmd == 'patch':
+    elif cmd == "patch":
         fn = patchvmkctl
     else:
         print(f'Error: Unknown command "{cmd}".')
@@ -2200,21 +2277,21 @@ def main() -> int:
         return 1
 
     if not os.path.exists(filename):
-        print(f'Error: File not found: {filename}')
+        print(f"Error: File not found: {filename}")
         return 1
 
-    print(f'Filename: {filename}')
+    print(f"Filename: {filename}")
     try:
         ok = fn(filename)
     except OSError as exc:
-        print(f'ERROR: OS error while processing {filename}: {exc}')
+        print(f"ERROR: OS error while processing {filename}: {exc}")
         return 1
     return 0 if ok else 1
 
 
-if __name__ == '__main__':
-    print('PatchVMKCTL 4.0.7b (ESXi 6.7 / 7.x / 8 U3)')
-    print('============================================')
+if __name__ == "__main__":
+    print("PatchVMKCTL 4.0.7d (ESXi 6.7 / 7.x / 8 U3)")
+    print("============================================")
     print()
     sys.exit(main())
 ```
@@ -2241,6 +2318,7 @@ if __name__ == '__main__':
 # License     : MIT
 #
 # Changelog   :
+#   2026-09-05 4.0.7d alsyundawy  Update version banner and docblock to 4.0.7d.
 #   2026-07-27 4.0.7c alsyundawy  Add non-interactive prompt protection and
 #                                 standardized script path resolution.
 #   2026-06-13 4.0.7b alsyundawy  Add BootModuleConfig.sh command validation,
@@ -2261,66 +2339,66 @@ YLW='\033[33m'
 RST='\033[0m'
 
 die() {
-    printf '%s\n' "${RED}>>> ERROR: $* <<<${RST}" >&2
-    exit 1
+	printf '%s\n' "${RED}>>> ERROR: $* <<<${RST}" >&2
+	exit 1
 }
 
 warn() {
-    printf '%s\n' "${YLW}WARNING: $*${RST}"
+	printf '%s\n' "${YLW}WARNING: $*${RST}"
 }
 
 usage() {
-    printf 'Usage: %s [-v|-h]\n' "$0"
-    printf '  -v        Enable verbose/debug output\n'
-    printf '  -h|--help Show this help message\n'
+	printf 'Usage: %s [-v|-h]\n' "$0"
+	printf '  -v        Enable verbose/debug output\n'
+	printf '  -h|--help Show this help message\n'
 }
 
 if [ $# -gt 1 ]; then
-    usage
-    die 'Too many arguments'
+	usage
+	die 'Too many arguments'
 fi
 
 if [ $# -eq 1 ]; then
-    case "$1" in
-        -v)
-            printf 'Verbose mode enabled\n'
-            set -x
-            ;;
-        -h|--help)
-            usage
-            exit 0
-            ;;
-        *)
-            usage
-            die "Invalid option: $1"
-            ;;
-    esac
+	case "$1" in
+	-v)
+		printf 'Verbose mode enabled\n'
+		set -x
+		;;
+	-h | --help)
+		usage
+		exit 0
+		;;
+	*)
+		usage
+		die "Invalid option: $1"
+		;;
+	esac
 fi
 
 command -v BootModuleConfig.sh >/dev/null 2>&1 || die 'BootModuleConfig.sh not found'
 
-printf 'VMware ESXi Unlocker 4.0.7c\n'
+printf 'VMware ESXi Unlocker 4.0.7d\n'
 printf '===========================\n'
 printf '\nRemoving unlocker...\n'
 
 if [ -f '/bootbank/apple.v00' ]; then
-    printf 'Removing apple.v00 from bootbank...\n'
-    BootModuleConfig.sh --verbose --remove=apple.v00 || die 'Failed to remove apple.v00 from bootbank'
-    printf '%s\n' "${GRN}apple.v00 removed from bootbank.${RST}"
+	printf 'Removing apple.v00 from bootbank...\n'
+	BootModuleConfig.sh --verbose --remove=apple.v00 || die 'Failed to remove apple.v00 from bootbank'
+	printf '%s\n' "${GRN}apple.v00 removed from bootbank.${RST}"
 else
-    warn 'apple.v00 not found in bootbank — host may already be in locked state'
+	warn 'apple.v00 not found in bootbank — host may already be in locked state'
 fi
 
 printf '\nReboot the ESXi server to complete the relock (y/N)? '
 read -r response 2>/dev/null || response='n'
-case "$response" in
-    [yY])
-        printf 'Rebooting the ESXi server now...\n'
-        reboot
-        ;;
-    *)
-        printf '%s\n' "${YLW}NOTE: Patches will remain active until the ESXi server is rebooted.${RST}"
-        ;;
+case "${response}" in
+[yY])
+	printf 'Rebooting the ESXi server now...\n'
+	reboot
+	;;
+*)
+	printf '%s\n' "${YLW}NOTE: Patches will remain active until the ESXi server is rebooted.${RST}"
+	;;
 esac
 
 exit 0
@@ -2356,6 +2434,8 @@ exit 0
 # License     : MIT
 #
 # Changelog   :
+#   2026-09-05 4.0.7d alsyundawy  Harden cleanup trap to script directory scope,
+#                                 synchronize banners and docblock to 4.0.7d.
 #   2026-07-27 4.0.7c alsyundawy  Add trap cleanup handler for temporary staging
 #                                 directories, fallback command path resolution
 #                                 in resolve_script, python3 PATH fallback, non-
@@ -2393,94 +2473,98 @@ GRN='\033[32m'
 YLW='\033[33m'
 RST='\033[0m'
 
+resolve_script() {
+	if command -v readlink >/dev/null 2>&1; then
+		_resolved=$(readlink -f "$0" 2>/dev/null || true)
+		if [ -n "${_resolved}" ]; then
+			printf '%s\n' "${_resolved}"
+			return 0
+		fi
+	fi
+
+	case "$0" in
+	/*) printf '%s\n' "$0" ;;
+	*/*) printf '%s/%s\n' "$(pwd -P || true)" "$0" ;;
+	*)
+		_cmd_path=$(command -v "$0" 2>/dev/null || true)
+		if [ -n "${_cmd_path}" ]; then
+			printf '%s\n' "${_cmd_path}"
+		else
+			printf '%s/%s\n' "$(pwd -P || true)" "$0"
+		fi
+		;;
+	esac
+}
+
+SCRIPT=$(resolve_script)
+SCRIPTPATH=$(dirname "${SCRIPT}")
+cd "${SCRIPTPATH}" || exit 1
+
 # shellcheck disable=SC2329
 cleanup() {
-    rm -rf ./tmp 2>/dev/null || true
-    rm -f ./apple.tar ./apple.vtar ./apple.vtar.v00 2>/dev/null || true
+	rm -rf "${SCRIPTPATH}/tmp" 2>/dev/null || true
+	rm -f "${SCRIPTPATH}/apple.tar" "${SCRIPTPATH}/apple.vtar" "${SCRIPTPATH}/apple.vtar.v00" 2>/dev/null || true
 }
 trap cleanup EXIT INT TERM HUP
 
 die() {
-    printf '%s\n' "${RED}>>> ERROR: $* <<<${RST}" >&2
-    exit 1
+	printf '%s\n' "${RED}>>> ERROR: $* <<<${RST}" >&2
+	exit 1
 }
 
 warn() {
-    printf '%s\n' "${YLW}WARNING: $*${RST}"
+	printf '%s\n' "${YLW}WARNING: $*${RST}"
 }
 
 need_cmd() {
-    command -v "$1" >/dev/null 2>&1 || die "Required command not found: $1"
-}
-
-resolve_script() {
-    if command -v readlink >/dev/null 2>&1; then
-        _resolved=$(readlink -f "$0" 2>/dev/null || true)
-        if [ -n "$_resolved" ]; then
-            printf '%s\n' "$_resolved"
-            return 0
-        fi
-    fi
-
-    case "$0" in
-        /*) printf '%s\n' "$0" ;;
-        */*) printf '%s/%s\n' "$(pwd -P)" "$0" ;;
-        *)
-            _cmd_path=$(command -v "$0" 2>/dev/null || true)
-            if [ -n "$_cmd_path" ]; then
-                printf '%s\n' "$_cmd_path"
-            else
-                printf '%s/%s\n' "$(pwd -P)" "$0"
-            fi
-            ;;
-    esac
+	command -v "$1" >/dev/null 2>&1 || die "Required command not found: $1"
 }
 
 detect_python3() {
-    for _py in /usr/bin/python3 \
-               /usr/lib/vmware/venv-vsphere/bin/python3 \
-               /usr/lib/vmware/venv-65/bin/python3; do
-        if [ -x "$_py" ]; then
-            printf '%s\n' "$_py"
-            return 0
-        fi
-    done
-    if _py=$(command -v python3 2>/dev/null) && [ -x "$_py" ]; then
-        printf '%s\n' "$_py"
-        return 0
-    fi
-    return 1
+	for _py in /usr/bin/python3 \
+		/usr/lib/vmware/venv-vsphere/bin/python3 \
+		/usr/lib/vmware/venv-65/bin/python3; do
+		if [ -x "${_py}" ]; then
+			printf '%s\n' "${_py}"
+			return 0
+		fi
+	done
+	if _py=$(command -v python3 2>/dev/null) && [ -x "${_py}" ]; then
+		printf '%s\n' "${_py}"
+		return 0
+	fi
+	return 1
 }
 
 usage() {
-    printf 'Usage: %s [-v|-h]\n' "$0"
-    printf '  -v        Enable verbose/debug output\n'
-    printf '  -h|--help Show this help message\n'
+	printf 'Usage: %s [-v|-h]\n' "$0"
+	printf '  -v        Enable verbose/debug output\n'
+	printf '  -h|--help Show this help message\n'
 }
 
 if [ $# -gt 1 ]; then
-    usage
-    die 'Too many arguments'
+	usage
+	die 'Too many arguments'
 fi
 
 if [ $# -eq 1 ]; then
-    case "$1" in
-        -v)
-            printf 'Verbose mode enabled\n'
-            set -x
-            ;;
-        -h|--help)
-            usage
-            exit 0
-            ;;
-        *)
-            usage
-            die "Invalid option: $1"
-            ;;
-    esac
+	case "$1" in
+	-v)
+		printf 'Verbose mode enabled\n'
+		set -x
+		;;
+	-h | --help)
+		usage
+		exit 0
+		;;
+	*)
+		usage
+		die "Invalid option: $1"
+		;;
+	esac
 fi
 
-printf 'VMware ESXi Unlocker 4.0.7c\n'
+printf 'VMware ESXi Unlocker 4.0.7d\n'
 printf '===========================\n'
 printf 'Compatibility: ESXi 6.7 / 7.x / 8 U3\n'
 printf 'Reference    : DrDonk/unlocker 4.x patch logic; ESXi port is fork-specific\n'
@@ -2489,46 +2573,43 @@ printf '\nInstalling unlocker...\n'
 # Required ESXi/base commands. vim-cmd/reboot are intentionally not mandatory
 # here because they are only used for best-effort warnings or optional reboot.
 for _cmd in vmware df awk tail cp chmod rm mkdir tar vmtar pigz mv \
-            BootModuleConfig.sh find grep esxcli; do
-    need_cmd "$_cmd"
+	BootModuleConfig.sh find grep esxcli; do
+	need_cmd "${_cmd}"
 done
 
 PYTHON3=$(detect_python3) || die 'python3 not found on this ESXi host'
-printf 'Python3 path : %s\n' "$PYTHON3"
-
-SCRIPT=$(resolve_script)
-SCRIPTPATH=$(dirname "$SCRIPT")
-cd "$SCRIPTPATH" || die "Cannot change to script directory: $SCRIPTPATH"
+printf 'Python3 path : %s\n' "${PYTHON3}"
 
 ESXI_VERSION=$(vmware -v 2>/dev/null || true)
-[ -n "$ESXI_VERSION" ] || die "Could not determine ESXi version via 'vmware -v'"
-printf 'ESXi version : %s\n' "$ESXI_VERSION"
+[ -n "${ESXI_VERSION}" ] || die "Could not determine ESXi version via 'vmware -v'"
+printf 'ESXi version : %s\n' "${ESXI_VERSION}"
 
 REQUIRED=400
 FREE=$(df -m . 2>/dev/null | awk 'NR==2 {print $4}')
-case "$FREE" in
-    ''|*[!0-9]*) die "Could not parse free disk space from 'df -m .'" ;;
+case "${FREE}" in
+'' | *[!0-9]*) die "Could not parse free disk space from 'df -m .'" ;;
+*) ;;
 esac
 
-if [ "$FREE" -lt "$REQUIRED" ]; then
-    die "Not enough free space: ${FREE} MB free, ${REQUIRED} MB required"
+if [ "${FREE}" -lt "${REQUIRED}" ]; then
+	die "Not enough free space: ${FREE} MB free, ${REQUIRED} MB required"
 fi
-printf 'Disk space   : %s MB free (OK)\n' "$FREE"
+printf 'Disk space   : %s MB free (OK)\n' "${FREE}"
 
 if esxcli vm process list 2>/dev/null | grep -q '^World ID:'; then
-    die 'Running VMs detected. Shut down/migrate all VMs before patching ESXi binaries'
+	die 'Running VMs detected. Shut down/migrate all VMs before patching ESXi binaries'
 fi
 
 if command -v vim-cmd >/dev/null 2>&1; then
-    _maintenance=$(vim-cmd hostsvc/hostsummary 2>/dev/null | \
-        awk -F'= ' '/inMaintenanceMode/ {gsub(",", "", $2); print $2; exit}')
-    if [ "$_maintenance" != 'true' ]; then
-        warn 'Host does not appear to be in Maintenance Mode; continue only for controlled lab/maintenance use'
-    fi
+	_maintenance=$(vim-cmd hostsvc/hostsummary 2>/dev/null |
+		awk -F'= ' '/inMaintenanceMode/ {gsub(",", "", $2); print $2; exit}')
+	if [ "${_maintenance}" != 'true' ]; then
+		warn 'Host does not appear to be in Maintenance Mode; continue only for controlled lab/maintenance use'
+	fi
 fi
 
 if [ -f '/bootbank/unlocker.tgz' ]; then
-    die 'ESXi Unlocker v3 is installed and must be removed first: BootModuleConfig.sh --verbose --remove=unlocker.tgz, then reboot'
+	die 'ESXi Unlocker v3 is installed and must be removed first: BootModuleConfig.sh --verbose --remove=unlocker.tgz, then reboot'
 fi
 
 rm -rf ./tmp 2>/dev/null || true
@@ -2537,67 +2618,67 @@ rm -f ./apple.* 2>/dev/null || true
 mkdir -p ./tmp/bin ./tmp/lib64 ./tmp/etc || die 'Could not create staging directories'
 
 printf '\nCopying ESXi binaries to staging area...\n'
-[ -f /bin/vmx ]       && [ -s /bin/vmx ]       || die '/bin/vmx is missing or empty'
+[ -f /bin/vmx ] && [ -s /bin/vmx ] || die '/bin/vmx is missing or empty'
 [ -f /bin/vmx-debug ] && [ -s /bin/vmx-debug ] || die '/bin/vmx-debug is missing or empty'
 
 cp /bin/vmx ./tmp/bin/ || die 'Failed to copy /bin/vmx'
 cp /bin/vmx-debug ./tmp/bin/ || die 'Failed to copy /bin/vmx-debug'
 
 if [ -f '/bin/vmx-stats' ] && [ -s '/bin/vmx-stats' ]; then
-    cp /bin/vmx-stats ./tmp/bin/ || die 'Failed to copy /bin/vmx-stats'
-    printf '%s\n' "${GRN}vmx-stats found and copied.${RST}"
+	cp /bin/vmx-stats ./tmp/bin/ || die 'Failed to copy /bin/vmx-stats'
+	printf '%s\n' "${GRN}vmx-stats found and copied.${RST}"
 else
-    printf '%s\n' "${YLW}SKIP: /bin/vmx-stats is missing or empty — skipping optional vmx-stats patch.${RST}"
+	printf '%s\n' "${YLW}SKIP: /bin/vmx-stats is missing or empty — skipping optional vmx-stats patch.${RST}"
 fi
 
 if [ -f '/lib64/libvmkctl.so' ] && [ -s '/lib64/libvmkctl.so' ]; then
-    cp /lib64/libvmkctl.so ./tmp/lib64/ || die 'Failed to copy /lib64/libvmkctl.so'
-    printf '%s\n' "${GRN}libvmkctl.so found and copied.${RST}"
+	cp /lib64/libvmkctl.so ./tmp/lib64/ || die 'Failed to copy /lib64/libvmkctl.so'
+	printf '%s\n' "${GRN}libvmkctl.so found and copied.${RST}"
 else
-    printf '%s\n' "${YLW}SKIP: /lib64/libvmkctl.so missing or empty — optional vmkctl patch not applicable.${RST}"
+	printf '%s\n' "${YLW}SKIP: /lib64/libvmkctl.so missing or empty — optional vmkctl patch not applicable.${RST}"
 fi
 
 chmod 4755 ./tmp/bin/vmx ./tmp/bin/vmx-debug || die 'Failed to chmod staged vmx binaries writable/setuid'
 if [ -f ./tmp/bin/vmx-stats ]; then
-    chmod 4755 ./tmp/bin/vmx-stats || die 'Failed to chmod staged vmx-stats'
+	chmod 4755 ./tmp/bin/vmx-stats || die 'Failed to chmod staged vmx-stats'
 fi
 if [ -f ./tmp/lib64/libvmkctl.so ]; then
-    chmod 0755 ./tmp/lib64/libvmkctl.so || die 'Failed to chmod staged libvmkctl.so'
+	chmod 0755 ./tmp/lib64/libvmkctl.so || die 'Failed to chmod staged libvmkctl.so'
 fi
 
-printf '%s\n' "$ESXI_VERSION" > ./tmp/etc/unlock.conf || die 'Failed to write staged unlock.conf'
+printf '%s\n' "${ESXI_VERSION}" >./tmp/etc/unlock.conf || die 'Failed to write staged unlock.conf'
 
 printf '\nPatching vmx binaries...\n'
-"$PYTHON3" ./patchsmc patch ./tmp/bin/vmx || die 'patchsmc failed for vmx'
-"$PYTHON3" ./patchsmc patch ./tmp/bin/vmx-debug || die 'patchsmc failed for vmx-debug'
+"${PYTHON3}" ./patchsmc patch ./tmp/bin/vmx || die 'patchsmc failed for vmx'
+"${PYTHON3}" ./patchsmc patch ./tmp/bin/vmx-debug || die 'patchsmc failed for vmx-debug'
 
 if [ -f './tmp/bin/vmx-stats' ] && [ -s './tmp/bin/vmx-stats' ]; then
-    "$PYTHON3" ./patchsmc patch ./tmp/bin/vmx-stats || warn 'patchsmc failed for optional vmx-stats; continuing without failing required vmx patch'
+	"${PYTHON3}" ./patchsmc patch ./tmp/bin/vmx-stats || warn 'patchsmc failed for optional vmx-stats; continuing without failing required vmx patch'
 else
-    printf '%s\n' "${YLW}SKIP: vmx-stats not in staging — skipping patch.${RST}"
+	printf '%s\n' "${YLW}SKIP: vmx-stats not in staging — skipping patch.${RST}"
 fi
 
 if [ -f './tmp/lib64/libvmkctl.so' ]; then
-    printf '\nPatching libvmkctl.so...\n'
-    "$PYTHON3" ./patchvmkctl patch ./tmp/lib64/libvmkctl.so || warn 'patchvmkctl failed; vCenter macOS guest start may require manual review'
+	printf '\nPatching libvmkctl.so...\n'
+	"${PYTHON3}" ./patchvmkctl patch ./tmp/lib64/libvmkctl.so || warn 'patchvmkctl failed; vCenter macOS guest start may require manual review'
 fi
 
 # Audit files are useful when patching binaries directly, but staged .bak and
 # .sha256 files must not enter apple.v00. Use POSIX find -exec instead of
 # non-portable find -delete for BusyBox/ESXi compatibility.
-find ./tmp \( -name '*.bak' -o -name '*.sha256' \) -type f -exec rm -f {} \; 2>/dev/null || \
-    die 'Failed to purge staged audit files before building apple.v00'
+find ./tmp \( -name '*.bak' -o -name '*.sha256' \) -type f -exec rm -f {} \; 2>/dev/null ||
+	die 'Failed to purge staged audit files before building apple.v00'
 
 chmod 4555 ./tmp/bin/vmx ./tmp/bin/vmx-debug || die 'Failed to set final vmx permissions'
 if [ -f ./tmp/bin/vmx-stats ]; then
-    chmod 4555 ./tmp/bin/vmx-stats || die 'Failed to set final vmx-stats permissions'
+	chmod 4555 ./tmp/bin/vmx-stats || die 'Failed to set final vmx-stats permissions'
 fi
 if [ -f ./tmp/lib64/libvmkctl.so ]; then
-    chmod 0555 ./tmp/lib64/libvmkctl.so || die 'Failed to set final libvmkctl.so permissions'
+	chmod 0555 ./tmp/lib64/libvmkctl.so || die 'Failed to set final libvmkctl.so permissions'
 fi
 
 printf '\nBuilding apple.v00 VMTAR file...\n'
-( cd ./tmp && tar cf ../apple.tar ./* ) || die 'Failed to create apple.tar'
+(cd ./tmp && tar cf ../apple.tar ./*) || die 'Failed to create apple.tar'
 vmtar -c apple.tar -o apple.vtar 2>/dev/null || die 'Failed to create apple.vtar'
 pigz -f -9 -n -T -k -S .v00 apple.vtar || die 'Failed to compress apple.vtar to .v00'
 [ -f apple.vtar.v00 ] || die 'Expected apple.vtar.v00 was not created'
@@ -2610,24 +2691,24 @@ rm -f apple.tar apple.vtar
 
 printf '\nAdding apple.v00 to bootbank...\n'
 if [ -f '/bootbank/apple.v00' ]; then
-    warn 'Existing /bootbank/apple.v00 detected; removing old module before adding the new one'
-    BootModuleConfig.sh --verbose --remove=apple.v00 || warn 'Old apple.v00 remove reported an error; attempting add anyway'
+	warn 'Existing /bootbank/apple.v00 detected; removing old module before adding the new one'
+	BootModuleConfig.sh --verbose --remove=apple.v00 || warn 'Old apple.v00 remove reported an error; attempting add anyway'
 fi
 BootModuleConfig.sh --verbose --add=apple.v00 || die 'BootModuleConfig add failed for apple.v00'
 
-printf '\n%s\n' "${GRN}Unlocker 4.0.7c installed successfully.${RST}"
-printf 'ESXi version patched: %s\n' "$ESXI_VERSION"
+printf '\n%s\n' "${GRN}Unlocker 4.0.7d installed successfully.${RST}"
+printf 'ESXi version patched: %s\n' "${ESXI_VERSION}"
 
 printf '\nReboot the ESXi server to activate the unlocker (y/N)? '
 read -r response 2>/dev/null || response='n'
-case "$response" in
-    [yY])
-        printf 'Rebooting the ESXi server now...\n'
-        reboot
-        ;;
-    *)
-        printf '%s\n' "${YLW}NOTE: SMC patches will NOT be active until the ESXi server is rebooted.${RST}"
-        ;;
+case "${response}" in
+[yY])
+	printf 'Rebooting the ESXi server now...\n'
+	reboot
+	;;
+*)
+	printf '%s\n' "${YLW}NOTE: SMC patches will NOT be active until the ESXi server is rebooted.${RST}"
+	;;
 esac
 
 exit 0

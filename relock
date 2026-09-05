@@ -17,6 +17,7 @@
 # License     : MIT
 #
 # Changelog   :
+#   2026-09-05 4.0.7d alsyundawy  Update version banner and docblock to 4.0.7d.
 #   2026-07-27 4.0.7c alsyundawy  Add non-interactive prompt protection and
 #                                 standardized script path resolution.
 #   2026-06-13 4.0.7b alsyundawy  Add BootModuleConfig.sh command validation,
@@ -37,66 +38,66 @@ YLW='\033[33m'
 RST='\033[0m'
 
 die() {
-    printf '%s\n' "${RED}>>> ERROR: $* <<<${RST}" >&2
-    exit 1
+	printf '%s\n' "${RED}>>> ERROR: $* <<<${RST}" >&2
+	exit 1
 }
 
 warn() {
-    printf '%s\n' "${YLW}WARNING: $*${RST}"
+	printf '%s\n' "${YLW}WARNING: $*${RST}"
 }
 
 usage() {
-    printf 'Usage: %s [-v|-h]\n' "$0"
-    printf '  -v        Enable verbose/debug output\n'
-    printf '  -h|--help Show this help message\n'
+	printf 'Usage: %s [-v|-h]\n' "$0"
+	printf '  -v        Enable verbose/debug output\n'
+	printf '  -h|--help Show this help message\n'
 }
 
 if [ $# -gt 1 ]; then
-    usage
-    die 'Too many arguments'
+	usage
+	die 'Too many arguments'
 fi
 
 if [ $# -eq 1 ]; then
-    case "$1" in
-        -v)
-            printf 'Verbose mode enabled\n'
-            set -x
-            ;;
-        -h|--help)
-            usage
-            exit 0
-            ;;
-        *)
-            usage
-            die "Invalid option: $1"
-            ;;
-    esac
+	case "$1" in
+	-v)
+		printf 'Verbose mode enabled\n'
+		set -x
+		;;
+	-h | --help)
+		usage
+		exit 0
+		;;
+	*)
+		usage
+		die "Invalid option: $1"
+		;;
+	esac
 fi
 
 command -v BootModuleConfig.sh >/dev/null 2>&1 || die 'BootModuleConfig.sh not found'
 
-printf 'VMware ESXi Unlocker 4.0.7c\n'
+printf 'VMware ESXi Unlocker 4.0.7d\n'
 printf '===========================\n'
 printf '\nRemoving unlocker...\n'
 
 if [ -f '/bootbank/apple.v00' ]; then
-    printf 'Removing apple.v00 from bootbank...\n'
-    BootModuleConfig.sh --verbose --remove=apple.v00 || die 'Failed to remove apple.v00 from bootbank'
-    printf '%s\n' "${GRN}apple.v00 removed from bootbank.${RST}"
+	printf 'Removing apple.v00 from bootbank...\n'
+	BootModuleConfig.sh --verbose --remove=apple.v00 || die 'Failed to remove apple.v00 from bootbank'
+	printf '%s\n' "${GRN}apple.v00 removed from bootbank.${RST}"
 else
-    warn 'apple.v00 not found in bootbank — host may already be in locked state'
+	warn 'apple.v00 not found in bootbank — host may already be in locked state'
 fi
 
 printf '\nReboot the ESXi server to complete the relock (y/N)? '
 read -r response 2>/dev/null || response='n'
-case "$response" in
-    [yY])
-        printf 'Rebooting the ESXi server now...\n'
-        reboot
-        ;;
-    *)
-        printf '%s\n' "${YLW}NOTE: Patches will remain active until the ESXi server is rebooted.${RST}"
-        ;;
+case "${response}" in
+[yY])
+	printf 'Rebooting the ESXi server now...\n'
+	reboot
+	;;
+*)
+	printf '%s\n' "${YLW}NOTE: Patches will remain active until the ESXi server is rebooted.${RST}"
+	;;
 esac
 
 exit 0

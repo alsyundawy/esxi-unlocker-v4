@@ -25,6 +25,8 @@
 # License     : MIT
 #
 # Changelog   :
+#   2026-09-05 4.0.7d alsyundawy  Harden cleanup trap to script directory scope,
+#                                 synchronize banners and docblock to 4.0.7d.
 #   2026-07-27 4.0.7c alsyundawy  Add trap cleanup handler for temporary staging
 #                                 directories, fallback command path resolution
 #                                 in resolve_script, python3 PATH fallback, non-
@@ -62,94 +64,98 @@ GRN='\033[32m'
 YLW='\033[33m'
 RST='\033[0m'
 
+resolve_script() {
+	if command -v readlink >/dev/null 2>&1; then
+		_resolved=$(readlink -f "$0" 2>/dev/null || true)
+		if [ -n "${_resolved}" ]; then
+			printf '%s\n' "${_resolved}"
+			return 0
+		fi
+	fi
+
+	case "$0" in
+	/*) printf '%s\n' "$0" ;;
+	*/*) printf '%s/%s\n' "$(pwd -P || true)" "$0" ;;
+	*)
+		_cmd_path=$(command -v "$0" 2>/dev/null || true)
+		if [ -n "${_cmd_path}" ]; then
+			printf '%s\n' "${_cmd_path}"
+		else
+			printf '%s/%s\n' "$(pwd -P || true)" "$0"
+		fi
+		;;
+	esac
+}
+
+SCRIPT=$(resolve_script)
+SCRIPTPATH=$(dirname "${SCRIPT}")
+cd "${SCRIPTPATH}" || exit 1
+
 # shellcheck disable=SC2329
 cleanup() {
-    rm -rf ./tmp 2>/dev/null || true
-    rm -f ./apple.tar ./apple.vtar ./apple.vtar.v00 2>/dev/null || true
+	rm -rf "${SCRIPTPATH}/tmp" 2>/dev/null || true
+	rm -f "${SCRIPTPATH}/apple.tar" "${SCRIPTPATH}/apple.vtar" "${SCRIPTPATH}/apple.vtar.v00" 2>/dev/null || true
 }
 trap cleanup EXIT INT TERM HUP
 
 die() {
-    printf '%s\n' "${RED}>>> ERROR: $* <<<${RST}" >&2
-    exit 1
+	printf '%s\n' "${RED}>>> ERROR: $* <<<${RST}" >&2
+	exit 1
 }
 
 warn() {
-    printf '%s\n' "${YLW}WARNING: $*${RST}"
+	printf '%s\n' "${YLW}WARNING: $*${RST}"
 }
 
 need_cmd() {
-    command -v "$1" >/dev/null 2>&1 || die "Required command not found: $1"
-}
-
-resolve_script() {
-    if command -v readlink >/dev/null 2>&1; then
-        _resolved=$(readlink -f "$0" 2>/dev/null || true)
-        if [ -n "$_resolved" ]; then
-            printf '%s\n' "$_resolved"
-            return 0
-        fi
-    fi
-
-    case "$0" in
-        /*) printf '%s\n' "$0" ;;
-        */*) printf '%s/%s\n' "$(pwd -P)" "$0" ;;
-        *)
-            _cmd_path=$(command -v "$0" 2>/dev/null || true)
-            if [ -n "$_cmd_path" ]; then
-                printf '%s\n' "$_cmd_path"
-            else
-                printf '%s/%s\n' "$(pwd -P)" "$0"
-            fi
-            ;;
-    esac
+	command -v "$1" >/dev/null 2>&1 || die "Required command not found: $1"
 }
 
 detect_python3() {
-    for _py in /usr/bin/python3 \
-               /usr/lib/vmware/venv-vsphere/bin/python3 \
-               /usr/lib/vmware/venv-65/bin/python3; do
-        if [ -x "$_py" ]; then
-            printf '%s\n' "$_py"
-            return 0
-        fi
-    done
-    if _py=$(command -v python3 2>/dev/null) && [ -x "$_py" ]; then
-        printf '%s\n' "$_py"
-        return 0
-    fi
-    return 1
+	for _py in /usr/bin/python3 \
+		/usr/lib/vmware/venv-vsphere/bin/python3 \
+		/usr/lib/vmware/venv-65/bin/python3; do
+		if [ -x "${_py}" ]; then
+			printf '%s\n' "${_py}"
+			return 0
+		fi
+	done
+	if _py=$(command -v python3 2>/dev/null) && [ -x "${_py}" ]; then
+		printf '%s\n' "${_py}"
+		return 0
+	fi
+	return 1
 }
 
 usage() {
-    printf 'Usage: %s [-v|-h]\n' "$0"
-    printf '  -v        Enable verbose/debug output\n'
-    printf '  -h|--help Show this help message\n'
+	printf 'Usage: %s [-v|-h]\n' "$0"
+	printf '  -v        Enable verbose/debug output\n'
+	printf '  -h|--help Show this help message\n'
 }
 
 if [ $# -gt 1 ]; then
-    usage
-    die 'Too many arguments'
+	usage
+	die 'Too many arguments'
 fi
 
 if [ $# -eq 1 ]; then
-    case "$1" in
-        -v)
-            printf 'Verbose mode enabled\n'
-            set -x
-            ;;
-        -h|--help)
-            usage
-            exit 0
-            ;;
-        *)
-            usage
-            die "Invalid option: $1"
-            ;;
-    esac
+	case "$1" in
+	-v)
+		printf 'Verbose mode enabled\n'
+		set -x
+		;;
+	-h | --help)
+		usage
+		exit 0
+		;;
+	*)
+		usage
+		die "Invalid option: $1"
+		;;
+	esac
 fi
 
-printf 'VMware ESXi Unlocker 4.0.7c\n'
+printf 'VMware ESXi Unlocker 4.0.7d\n'
 printf '===========================\n'
 printf 'Compatibility: ESXi 6.7 / 7.x / 8 U3\n'
 printf 'Reference    : DrDonk/unlocker 4.x patch logic; ESXi port is fork-specific\n'
@@ -158,46 +164,43 @@ printf '\nInstalling unlocker...\n'
 # Required ESXi/base commands. vim-cmd/reboot are intentionally not mandatory
 # here because they are only used for best-effort warnings or optional reboot.
 for _cmd in vmware df awk tail cp chmod rm mkdir tar vmtar pigz mv \
-            BootModuleConfig.sh find grep esxcli; do
-    need_cmd "$_cmd"
+	BootModuleConfig.sh find grep esxcli; do
+	need_cmd "${_cmd}"
 done
 
 PYTHON3=$(detect_python3) || die 'python3 not found on this ESXi host'
-printf 'Python3 path : %s\n' "$PYTHON3"
-
-SCRIPT=$(resolve_script)
-SCRIPTPATH=$(dirname "$SCRIPT")
-cd "$SCRIPTPATH" || die "Cannot change to script directory: $SCRIPTPATH"
+printf 'Python3 path : %s\n' "${PYTHON3}"
 
 ESXI_VERSION=$(vmware -v 2>/dev/null || true)
-[ -n "$ESXI_VERSION" ] || die "Could not determine ESXi version via 'vmware -v'"
-printf 'ESXi version : %s\n' "$ESXI_VERSION"
+[ -n "${ESXI_VERSION}" ] || die "Could not determine ESXi version via 'vmware -v'"
+printf 'ESXi version : %s\n' "${ESXI_VERSION}"
 
 REQUIRED=400
 FREE=$(df -m . 2>/dev/null | awk 'NR==2 {print $4}')
-case "$FREE" in
-    ''|*[!0-9]*) die "Could not parse free disk space from 'df -m .'" ;;
+case "${FREE}" in
+'' | *[!0-9]*) die "Could not parse free disk space from 'df -m .'" ;;
+*) ;;
 esac
 
-if [ "$FREE" -lt "$REQUIRED" ]; then
-    die "Not enough free space: ${FREE} MB free, ${REQUIRED} MB required"
+if [ "${FREE}" -lt "${REQUIRED}" ]; then
+	die "Not enough free space: ${FREE} MB free, ${REQUIRED} MB required"
 fi
-printf 'Disk space   : %s MB free (OK)\n' "$FREE"
+printf 'Disk space   : %s MB free (OK)\n' "${FREE}"
 
 if esxcli vm process list 2>/dev/null | grep -q '^World ID:'; then
-    die 'Running VMs detected. Shut down/migrate all VMs before patching ESXi binaries'
+	die 'Running VMs detected. Shut down/migrate all VMs before patching ESXi binaries'
 fi
 
 if command -v vim-cmd >/dev/null 2>&1; then
-    _maintenance=$(vim-cmd hostsvc/hostsummary 2>/dev/null | \
-        awk -F'= ' '/inMaintenanceMode/ {gsub(",", "", $2); print $2; exit}')
-    if [ "$_maintenance" != 'true' ]; then
-        warn 'Host does not appear to be in Maintenance Mode; continue only for controlled lab/maintenance use'
-    fi
+	_maintenance=$(vim-cmd hostsvc/hostsummary 2>/dev/null |
+		awk -F'= ' '/inMaintenanceMode/ {gsub(",", "", $2); print $2; exit}')
+	if [ "${_maintenance}" != 'true' ]; then
+		warn 'Host does not appear to be in Maintenance Mode; continue only for controlled lab/maintenance use'
+	fi
 fi
 
 if [ -f '/bootbank/unlocker.tgz' ]; then
-    die 'ESXi Unlocker v3 is installed and must be removed first: BootModuleConfig.sh --verbose --remove=unlocker.tgz, then reboot'
+	die 'ESXi Unlocker v3 is installed and must be removed first: BootModuleConfig.sh --verbose --remove=unlocker.tgz, then reboot'
 fi
 
 rm -rf ./tmp 2>/dev/null || true
@@ -206,67 +209,67 @@ rm -f ./apple.* 2>/dev/null || true
 mkdir -p ./tmp/bin ./tmp/lib64 ./tmp/etc || die 'Could not create staging directories'
 
 printf '\nCopying ESXi binaries to staging area...\n'
-[ -f /bin/vmx ]       && [ -s /bin/vmx ]       || die '/bin/vmx is missing or empty'
+[ -f /bin/vmx ] && [ -s /bin/vmx ] || die '/bin/vmx is missing or empty'
 [ -f /bin/vmx-debug ] && [ -s /bin/vmx-debug ] || die '/bin/vmx-debug is missing or empty'
 
 cp /bin/vmx ./tmp/bin/ || die 'Failed to copy /bin/vmx'
 cp /bin/vmx-debug ./tmp/bin/ || die 'Failed to copy /bin/vmx-debug'
 
 if [ -f '/bin/vmx-stats' ] && [ -s '/bin/vmx-stats' ]; then
-    cp /bin/vmx-stats ./tmp/bin/ || die 'Failed to copy /bin/vmx-stats'
-    printf '%s\n' "${GRN}vmx-stats found and copied.${RST}"
+	cp /bin/vmx-stats ./tmp/bin/ || die 'Failed to copy /bin/vmx-stats'
+	printf '%s\n' "${GRN}vmx-stats found and copied.${RST}"
 else
-    printf '%s\n' "${YLW}SKIP: /bin/vmx-stats is missing or empty — skipping optional vmx-stats patch.${RST}"
+	printf '%s\n' "${YLW}SKIP: /bin/vmx-stats is missing or empty — skipping optional vmx-stats patch.${RST}"
 fi
 
 if [ -f '/lib64/libvmkctl.so' ] && [ -s '/lib64/libvmkctl.so' ]; then
-    cp /lib64/libvmkctl.so ./tmp/lib64/ || die 'Failed to copy /lib64/libvmkctl.so'
-    printf '%s\n' "${GRN}libvmkctl.so found and copied.${RST}"
+	cp /lib64/libvmkctl.so ./tmp/lib64/ || die 'Failed to copy /lib64/libvmkctl.so'
+	printf '%s\n' "${GRN}libvmkctl.so found and copied.${RST}"
 else
-    printf '%s\n' "${YLW}SKIP: /lib64/libvmkctl.so missing or empty — optional vmkctl patch not applicable.${RST}"
+	printf '%s\n' "${YLW}SKIP: /lib64/libvmkctl.so missing or empty — optional vmkctl patch not applicable.${RST}"
 fi
 
 chmod 4755 ./tmp/bin/vmx ./tmp/bin/vmx-debug || die 'Failed to chmod staged vmx binaries writable/setuid'
 if [ -f ./tmp/bin/vmx-stats ]; then
-    chmod 4755 ./tmp/bin/vmx-stats || die 'Failed to chmod staged vmx-stats'
+	chmod 4755 ./tmp/bin/vmx-stats || die 'Failed to chmod staged vmx-stats'
 fi
 if [ -f ./tmp/lib64/libvmkctl.so ]; then
-    chmod 0755 ./tmp/lib64/libvmkctl.so || die 'Failed to chmod staged libvmkctl.so'
+	chmod 0755 ./tmp/lib64/libvmkctl.so || die 'Failed to chmod staged libvmkctl.so'
 fi
 
-printf '%s\n' "$ESXI_VERSION" > ./tmp/etc/unlock.conf || die 'Failed to write staged unlock.conf'
+printf '%s\n' "${ESXI_VERSION}" >./tmp/etc/unlock.conf || die 'Failed to write staged unlock.conf'
 
 printf '\nPatching vmx binaries...\n'
-"$PYTHON3" ./patchsmc patch ./tmp/bin/vmx || die 'patchsmc failed for vmx'
-"$PYTHON3" ./patchsmc patch ./tmp/bin/vmx-debug || die 'patchsmc failed for vmx-debug'
+"${PYTHON3}" ./patchsmc patch ./tmp/bin/vmx || die 'patchsmc failed for vmx'
+"${PYTHON3}" ./patchsmc patch ./tmp/bin/vmx-debug || die 'patchsmc failed for vmx-debug'
 
 if [ -f './tmp/bin/vmx-stats' ] && [ -s './tmp/bin/vmx-stats' ]; then
-    "$PYTHON3" ./patchsmc patch ./tmp/bin/vmx-stats || warn 'patchsmc failed for optional vmx-stats; continuing without failing required vmx patch'
+	"${PYTHON3}" ./patchsmc patch ./tmp/bin/vmx-stats || warn 'patchsmc failed for optional vmx-stats; continuing without failing required vmx patch'
 else
-    printf '%s\n' "${YLW}SKIP: vmx-stats not in staging — skipping patch.${RST}"
+	printf '%s\n' "${YLW}SKIP: vmx-stats not in staging — skipping patch.${RST}"
 fi
 
 if [ -f './tmp/lib64/libvmkctl.so' ]; then
-    printf '\nPatching libvmkctl.so...\n'
-    "$PYTHON3" ./patchvmkctl patch ./tmp/lib64/libvmkctl.so || warn 'patchvmkctl failed; vCenter macOS guest start may require manual review'
+	printf '\nPatching libvmkctl.so...\n'
+	"${PYTHON3}" ./patchvmkctl patch ./tmp/lib64/libvmkctl.so || warn 'patchvmkctl failed; vCenter macOS guest start may require manual review'
 fi
 
 # Audit files are useful when patching binaries directly, but staged .bak and
 # .sha256 files must not enter apple.v00. Use POSIX find -exec instead of
 # non-portable find -delete for BusyBox/ESXi compatibility.
-find ./tmp \( -name '*.bak' -o -name '*.sha256' \) -type f -exec rm -f {} \; 2>/dev/null || \
-    die 'Failed to purge staged audit files before building apple.v00'
+find ./tmp \( -name '*.bak' -o -name '*.sha256' \) -type f -exec rm -f {} \; 2>/dev/null ||
+	die 'Failed to purge staged audit files before building apple.v00'
 
 chmod 4555 ./tmp/bin/vmx ./tmp/bin/vmx-debug || die 'Failed to set final vmx permissions'
 if [ -f ./tmp/bin/vmx-stats ]; then
-    chmod 4555 ./tmp/bin/vmx-stats || die 'Failed to set final vmx-stats permissions'
+	chmod 4555 ./tmp/bin/vmx-stats || die 'Failed to set final vmx-stats permissions'
 fi
 if [ -f ./tmp/lib64/libvmkctl.so ]; then
-    chmod 0555 ./tmp/lib64/libvmkctl.so || die 'Failed to set final libvmkctl.so permissions'
+	chmod 0555 ./tmp/lib64/libvmkctl.so || die 'Failed to set final libvmkctl.so permissions'
 fi
 
 printf '\nBuilding apple.v00 VMTAR file...\n'
-( cd ./tmp && tar cf ../apple.tar ./* ) || die 'Failed to create apple.tar'
+(cd ./tmp && tar cf ../apple.tar ./*) || die 'Failed to create apple.tar'
 vmtar -c apple.tar -o apple.vtar 2>/dev/null || die 'Failed to create apple.vtar'
 pigz -f -9 -n -T -k -S .v00 apple.vtar || die 'Failed to compress apple.vtar to .v00'
 [ -f apple.vtar.v00 ] || die 'Expected apple.vtar.v00 was not created'
@@ -279,24 +282,24 @@ rm -f apple.tar apple.vtar
 
 printf '\nAdding apple.v00 to bootbank...\n'
 if [ -f '/bootbank/apple.v00' ]; then
-    warn 'Existing /bootbank/apple.v00 detected; removing old module before adding the new one'
-    BootModuleConfig.sh --verbose --remove=apple.v00 || warn 'Old apple.v00 remove reported an error; attempting add anyway'
+	warn 'Existing /bootbank/apple.v00 detected; removing old module before adding the new one'
+	BootModuleConfig.sh --verbose --remove=apple.v00 || warn 'Old apple.v00 remove reported an error; attempting add anyway'
 fi
 BootModuleConfig.sh --verbose --add=apple.v00 || die 'BootModuleConfig add failed for apple.v00'
 
-printf '\n%s\n' "${GRN}Unlocker 4.0.7c installed successfully.${RST}"
-printf 'ESXi version patched: %s\n' "$ESXI_VERSION"
+printf '\n%s\n' "${GRN}Unlocker 4.0.7d installed successfully.${RST}"
+printf 'ESXi version patched: %s\n' "${ESXI_VERSION}"
 
 printf '\nReboot the ESXi server to activate the unlocker (y/N)? '
 read -r response 2>/dev/null || response='n'
-case "$response" in
-    [yY])
-        printf 'Rebooting the ESXi server now...\n'
-        reboot
-        ;;
-    *)
-        printf '%s\n' "${YLW}NOTE: SMC patches will NOT be active until the ESXi server is rebooted.${RST}"
-        ;;
+case "${response}" in
+[yY])
+	printf 'Rebooting the ESXi server now...\n'
+	reboot
+	;;
+*)
+	printf '%s\n' "${YLW}NOTE: SMC patches will NOT be active until the ESXi server is rebooted.${RST}"
+	;;
 esac
 
 exit 0
